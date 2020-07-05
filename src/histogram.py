@@ -1,9 +1,4 @@
-"""takes in a text file, counts the frequency of words in the text
-returns a dictionary of word:frequency, key:value pairs"""
-
 import sys
-import timeit
-
 
 def arrayFileWords(file):
     """opens a file, puts the words into an array,
@@ -12,7 +7,6 @@ def arrayFileWords(file):
     array = f.read().split()
     f.close()
     return array
-    #there might be a way of opening/closing (compacting the code) into less lines
 
 def strip_Punc(array):
     """opens an array of strings, cycles through each word and then each character
@@ -25,13 +19,10 @@ def strip_Punc(array):
                 newWord += char
         array[i] = newWord
     return array
-    #string method .punc()
-
 
 def lowercaseArray(array):
     """takes in an array of strings, uses a list comprehension to lowercase each letter"""
-    #uppercase = ["I", "\'I" , "\"I"]
-    array = [x.lower() for x in array] # if x not in uppercase]
+    array = [x.lower() for x in array]
     return array
 
 
@@ -61,8 +52,6 @@ def frequencyDict(histogram, word):
     else:
         return str(0)
 ##^^^^^DICTIONARY HISTOGRAM^^^^^
-
-
 
 
 #List of lists HISTOGRAM ---------
@@ -100,9 +89,6 @@ def frequencyArray(histogram, word):
     else:
         return "Your word is not in the text."
 #^^^^^list of lists HISTOGRAM^^^^^
-
-
-
 
 #List of tuples HISTOGRAM ---------
 def countWordsTuples(array):
@@ -176,8 +162,65 @@ def keysAsValues(histogram):
             myDict[value].append(histogramKeys[i])
     return (myDict, highest_freq)
 
+def wordBeforeAfter(n, word, array):
+    """takes in an array of strings,
+    using the global variables word and n,
+    looks for instances of the word in the array.
+    if an instance of the word is found,
+    compiles an array of n words that come before the word.
+    returns an array of tuples of
+    (1) instance of word,
+    (2) array of n words before the instance of the searched word, and
+    (3) the next word that comes after the instance of the searched word."""
+    instances = []
+    for i, fileWord in enumerate(array):
+        if fileWord == str.lower(str(word)):
+            x = i -1
+            beforeWords = []
+            #while x > (i - int(n) - 1): #if you want n words before word
+            while x > (i - int(n)): #if you want n words after next-word
+                beforeWords.append(array[x])
+                x -= 1
+            myTuple = (word, beforeWords, array[i+1])
+            instances.append(myTuple)
+    return instances
 
-if __name__ == '__main__':
-    file = str(sys.argv[1])
-    print(countWordsArray(lowercaseArray(strip_Punc(arrayFileWords(file)))))
-    #print(timeit.timeit(number = 10000))
+def firstOrderMarkov(arrayOfTuples):
+    """takes in an array of tuples of (word, [array of words before word], next word that comes after word)
+    creates a dictionary of {next word : number of instances}. splits the dictionary into a 'twin index' of two arrays: keys and values.
+
+    "twin index" = keys[0] and values[0] reference the key and value pair of the dictionary that was 'split'.
+
+    for each key the function prints to console what the likelihood is of that key appearing as the next word."""
+    myDict = {}
+    for i, instance in enumerate(arrayOfTuples):
+        if instance[2] not in myDict:
+            myDict[arrayOfTuples[i][2]] = 1
+        else:
+            myDict[arrayOfTuples[i][2]] += 1
+    keys = list(myDict.keys())
+    values = list(myDict.values())
+    print(keys)
+    print(values)
+
+def nOrderMarkov(instances):
+    """takes in an array of tuples (word, [array of n words before word], and next word),
+    cycles through the array of tuples and appends the next word and the word to an array,
+    and then appends the array of before words
+    Does other stuff, see to-do at bottom to see output and how it's right, but also not..."""
+    arrayofArrays = []
+    myDict = {}
+    for i, instance in enumerate(instances):
+        myArray = [] #array in "backwards" chronological order from last word (next) to first word
+        myArray.append(instance[2]) #next word
+        myArray.append(instance[0]) #word
+        myArray+=instance[1] #array of words before word
+        arrayofArrays.append(myArray)
+    for array in arrayofArrays:
+        if tuple(array) not in myDict:
+            myDict[tuple(array)] = 1
+        else:
+            myDict[tuple(array)] += 1
+    keys = list(myDict.keys())
+    values = list(myDict.values())
+    return(keys, values)
