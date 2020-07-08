@@ -11,11 +11,10 @@ def pick_random_file():
 
 @app.route('/')
 def _main():
-
-    file = pick_random_file()
-    word = "the" # testing
-    n = 3
-    _tweet = get_tweet(file,word,n)
+    # file = pick_random_file()
+    n = randint(7,30)
+    file = 'public/data/ALL.md'
+    _tweet = get_tweet(file,n)
     return render_template('index.html', title='Home', tweet=_tweet)
 
 if __name__ == '__main__':
