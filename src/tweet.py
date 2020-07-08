@@ -34,50 +34,45 @@ def wordBeforeAfter(n, target_word, words_array):
     """
     Takes in an array of strings and looks for instances of the word in the array.
     If an instance of the word is found, the program compiles an array of length n
-    words that come before the target word. Returns an array of tuples of:
-    (1) the target_word,
-    (2) an array of n words before the instance of the target_word, and
-    (3) the next word that comes after the instance of the target_word.
+    words that come before the target word. Returns an array of arrays of:
+
+    (1) the next word that comes after the instance of the target_word.
+    (2) the target_word,
+    (3) an array of n words before the instance of the target_word
     """
     instances = []
     for i, word in enumerate(words_array):
-        if str.lower(word) == str.lower(target_word):
+        if word == target_word:
             j = i - 1 # the last index before the current one
             words_before_target = []
             while j > i - n and j >= 0:
                 words_before_target.append(words_array[j])
                 j -= 1
             word_after_target = words_array[i+1]
-            instance = (target_word, words_before_target, word_after_target)
+            instance = [word_after_target, target_word] + words_before_target
             instances.append(instance)
     return instances
 
 def nOrderMarkov(instances):
     """
     Takes in an array of word "instances".
-    Instances are tuples that contain:
-    (1) the target_word,
-    (2) an array of n words before the instance of the target_word, and
-    (3) the next word that comes after the instance of the target_word.
-    Cycles through the instances and appends the next word and the target_word
-    to an array, and then appends the array of before words
+    Instances are arrays that contain:
+    (1) the next word that comes after the instance of the target_word.
+    (2) the target_word,
+    (3) an array of n words before the instance of the target_word.
+    Returns a histogram of keys to counts.
+    Keys consist of tuples of (next_word, target_word, words_before_target)
     """
-    arrayofArrays = []
     myDict = {}
-    for i, instance in enumerate(instances):
-        myArray = [] #array in "backwards" chronological order from last word (next) to first word
-        myArray.append(instance[2]) #next word
-        myArray.append(instance[0]) #word
-        myArray+=instance[1] #array of words before word
-        arrayofArrays.append(myArray)
-    for array in arrayofArrays:
-        if tuple(array) not in myDict:
-            myDict[tuple(array)] = 1
+    for instance in instances:
+        _key = tuple(instance)
+        if _key not in myDict:
+            myDict[_key] = 1
         else:
-            myDict[tuple(array)] += 1
+            myDict[_key] += 1
     keys = list(myDict.keys())
-    values = list(myDict.values())
-    return(keys, values)
+    counts = list(myDict.values())
+    return keys, counts
 
 def check_chars(myTweet):
     """ Checks to see how many characters there are in myTweet.
@@ -86,30 +81,44 @@ def check_chars(myTweet):
     return True if len(myTweet) < 141 else False
 
 def get_tweet(file,n):
-    # take in the corpus of the given author and turn corpus
-    # into an array of words and lowercase all words
-    # words = lowercaseArray(arrayFileWords(file))
-
+    """
+    I've cleaned this up a lot, but it's still pretty opaque.
+    Need to refactor again and maybe even change my implementation.
+    """
     words = arrayFileWords(file)
-    rand_int = random.randint(0,len(words)-1)
+    rand_int = random.randint(0,len(words)-3000)
     word = words[rand_int]
-    myTweet = word
 
+    # Starting off with an uppercase word...
+    for i in range(rand_int):
+        for c in words[i]:
+            if c.isupper():
+                word = words[i]
+                break
+    myTweet = word
     while check_chars(myTweet):
-        keysValues = nOrderMarkov(wordBeforeAfter(n, word, words))
-        x = 0
+        instances = wordBeforeAfter(n, word, words)
+        keys, counts = nOrderMarkov(instances)
+        j = 0
         storeIndex = 0
         stored = deque()
-        for i, value in enumerate(keysValues[1]):
-            if value > x and len(stored) < 7:
-                x = value
+        # Creates a queue of indices into keys.
+        # Only appends to queue if count of that particular key is higher than
+            # the current maximum count. Kind of a wonky way of doing it, but it
+            # introduces variation.
+        for i in range(len(counts)):
+            if counts[i] > j and len(stored) < n:
                 storeIndex = i
                 stored.append(i)
-            elif value > x and len(stored) > 7:
-                x = value
+            elif counts[i] > j and len(stored) > n:
                 stored.popleft()
                 stored.append(i)
-        word = keysValues[0][stored[random.randint(0, len(stored)-1)]][0]
+            j = counts[i]
+        rand_int = random.randint(0, len(stored)-1)
+        rand_index_into_keys = stored[rand_int]
+        # the first word of key in keys is the next_word after the target.
+        next_word = keys[rand_index_into_keys][0]
+        word = next_word
         myTweet += " "
         myTweet += word
     else:

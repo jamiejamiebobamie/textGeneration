@@ -12,7 +12,7 @@ def pick_random_file():
 @app.route('/')
 def _main():
     # file = pick_random_file()
-    n = randint(7,30)
+    n = randint(7,15)
     file = 'public/data/ALL.md'
     _tweet = get_tweet(file,n)
     return render_template('index.html', title='Home', tweet=_tweet)
