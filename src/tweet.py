@@ -4,49 +4,83 @@ from random import randint
 import heapq
 
 # hyperparameters
-ORDER = 50 # the order of the markov model.
+ORDER = 100 # the order of the markov model.
 EPSILON = 2 # the amount to floor divide the max_length. a higher number allows
             # more words to be accepted despite how few words back they match the
             # sequence
+NUM_TWEETS = 3
 
 
 def arrayFileWords(file):
-    """Opens a file, puts the words into an array,
-    closes the file and returns the array of strings"""
+    """
+    """
     f = open(file, "r")
     array = f.read().split()
     f.close()
     return array
 
 # IN PROGRESS...
-def tokenize_punc(array):
-    """opens an array of strings, cycles through each word and then each character
-    of a word and replaces that word with an exact copy but without punctuation. returns the array."""
-    punctuation = [";",".","!","?"]
-    for i in range(len(array)):
-        j = len(array[i]) - 1
-        while j >= 0 and array[i][j] in punctuation:
-                j-=1
-        if j != len(array[i]) - 1:
-            punc = array[i][-(len(array[i]) - j)]
-            word = array[i][:j]
-            array[i] = newWord
-            array.insert(i+1,char)
-
-    return array
+def tokenize_punc(words):
+    """
+    """
+    punctuation = [";",".","!","?",",","\""]
+    i = 0
+    while i < len(words):
+        j = 0
+        new_word = []
+        punc = []
+        while j < len(words[i]):
+            if words[i][j] in punctuation:
+                punc.append(words[i][j])
+            else:
+                new_word.append(words[i][j])
+            j+=1
+        words[i] = "".join(new_word)
+        # all punctuation is pulled from the word and placed as new tokens
+            # after the word.
+        j = 0
+        while j < len(punc):
+            i+=1
+            words.insert(i,punc[j])
+            j+=1
+        i+=1
+    return words
 
 def check_chars(my_tweet):
-    """ Checks to see if the number of characters
-        of the tweet are less than 120.
+    """
     """
     count = 0
     for word in my_tweet:
         count+=len(word)
-        if count > 120:
+        if count > 400:
             return False
     return True
 
+def stop_after_punc(my_tweet):
+    """
+    """
+    punc = [";",".","!","?",",","\""]
+    stop_punc = [".","!","?"]
+    _tweet = []
+    j = 0
+    for i in range(len(my_tweet)):
+        if my_tweet[i] in punc:
+            if i > 20 and my_tweet[i] in stop_punc:
+                break
+            else:
+                part = " ".join(my_tweet[j:i])+my_tweet[i]
+                _tweet.append(part)
+                if i + 1 < len(my_tweet):
+                    j = i + 1
+                else:
+                    j = i
+    last_part = " ".join(my_tweet[j:i])+my_tweet[i]
+    _tweet.append(last_part)
+    return _tweet
+
 def nOrderMarkov(n,my_tweet,words):
+    """
+    """
     instances = {}
     if len(my_tweet) >= n:
         target_sequence = my_tweet[-n]
@@ -78,6 +112,8 @@ def nOrderMarkov(n,my_tweet,words):
     return instances
 
 def pick_next_word(histogram_instances):
+    """
+    """
     # not the best time complexity...
     next_words = []
     most_frequent = heapq.nlargest(10,list(histogram_instances.values()))
@@ -89,16 +125,19 @@ def pick_next_word(histogram_instances):
     return next_words[rand_int]
 
 def pick_random_word(words):
+    """
+    """
     rand_int = randint(0,len(words)-1)
     return words[rand_int]
 
 def get_tweet(file):
     """
-    I've cleaned this up a lot, but it's still pretty opaque.
-    Need to refactor again and maybe even change my implementation.
     """
     words = arrayFileWords(file)
-    rand_int = randint(0,len(words)-3000)
+    words = tokenize_punc(words)
+    tweets = []
+    # while len(tweets) < NUM_TWEETS:
+    rand_int = randint(0,len(words)-len(words)//3)
     word = words[rand_int]
     # Starting off with an uppercase word...
     for i in range(rand_int):
@@ -111,7 +150,7 @@ def get_tweet(file):
         if ORDER:
             n = ORDER
         else:
-            n = randint(7,50)
+            n = 100
         instances = nOrderMarkov(n, my_tweet, words)
         if instances:
             next_word = pick_next_word(instances)
@@ -121,7 +160,11 @@ def get_tweet(file):
             print(next_word)
             my_tweet.append(next_word)
     else:
-        return " ".join(my_tweet)
+        my_tweet = stop_after_punc(my_tweet)
+        my_tweet = " ".join(my_tweet)
+        return my_tweet
+            # tweets.append(my_tweet)
+    # return tweets
 
 if __name__ == '__main__':
     file = '../public/data/Grimm.md'

@@ -7,11 +7,11 @@ from src.tweet import get_tweet
 def pick_random_file():
     path = 'public/data'
     mylist = os.listdir(path)
-    return path +"/"+ mylist[randint(0,len(mylist))]
+    return path +"/"+ mylist[randint(0,len(mylist)-1)]
 
 @app.route('/')
 def _main():
-    # file = pick_random_file()
+    file = pick_random_file()
     # file = 'public/data/ALL.md'
     # file = 'public/data/Angelou.md'
     # file = 'public/data/Grimm.md'
@@ -19,11 +19,11 @@ def _main():
     # file = 'public/data/Lovecraft.md'
     # file = 'public/data/Poe.md'
     # file = 'public/data/Rowling.md'
-    file = 'public/data/Shakespeare.md'
+    # file = 'public/data/Shakespeare.md'
 
-
+    print(file)
     _tweet = get_tweet(file)
-    return render_template('index.html', title='Home', tweet=_tweet)
+    return render_template('index.html', title='Home',tweet=_tweet,file=file)
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 3000)
