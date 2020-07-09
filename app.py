@@ -14,7 +14,11 @@ def _main():
     # file = pick_random_file()
     # file = 'public/data/ALL.md'
     # file = 'public/data/Angelou.md'
-    file = 'public/data/Grimm.md'
+    # file = 'public/data/Grimm.md'
+    # file = 'public/data/Woolf.md'
+    # file = 'public/data/Lovecraft.md'
+    file = 'public/data/Poe.md'
+    # file = 'public/data/Rowling.md'
 
     _tweet = get_tweet(file)
     return render_template('index.html', title='Home', tweet=_tweet)

@@ -1,6 +1,14 @@
-from collections import deque
+from collections import deque, Counter
 import sys
 from random import randint
+import heapq
+
+# hyperparameters
+ORDER = 100 # the order of the markov model.
+EPSILON = 2 # the amount to floor divide the max_length. a higher number allows
+            # more words to be accepted despite how few words back they match the
+            # sequence
+
 
 def arrayFileWords(file):
     """Opens a file, puts the words into an array,
@@ -10,21 +18,7 @@ def arrayFileWords(file):
     f.close()
     return array
 
-# NEED: to conserve punctuation by tokenizing it,
-# inserting a new token after the given word has been removed of the punc.
-def strip_Punc(array):
-    """opens an array of strings, cycles through each word and then each character
-    of a word and replaces that word with an exact copy but without punctuation. returns the array."""
-    punctuation = ["@" , "#" , "$" , ":", ";", "_", "*" , "}" , "[" , "{" , "]" , "," , ".", "!" , "?"] #took out single and double quotes from this array
-    for i, word in enumerate(array):
-        newWord = ""
-        for char in word:
-            if char not in punctuation:
-                newWord += char
-        array[i] = newWord
-    return array
-
-# in progress...
+# IN PROGRESS...
 def tokenize_punc(array):
     """opens an array of strings, cycles through each word and then each character
     of a word and replaces that word with an exact copy but without punctuation. returns the array."""
@@ -35,67 +29,68 @@ def tokenize_punc(array):
                 j-=1
         if j != len(array[i]) - 1:
             punc = array[i][-(len(array[i]) - j)]
-            word = array[i][:j)]
+            word = array[i][:j]
             array[i] = newWord
             array.insert(i+1,char)
 
     return array
 
-# just for testing.
-def lowercaseArray(array):
-    """takes in an array of strings, uses a list comprehension to lowercase each letter"""
-    array = [x.lower() for x in array]
-    return array
-
-def wordBeforeAfter(n, target_word, words_array):
+def check_chars(my_tweet):
+    """ Checks to see if the number of characters
+        of the tweet are less than 120.
     """
-    Takes in an array of strings and looks for instances of the word in the array.
-    If an instance of the word is found, the program compiles an array of length n
-    words that come before the target word. Returns an array of arrays of:
+    count = 0
+    for word in my_tweet:
+        count+=len(word)
+        if count > 120:
+            return False
+    return True
 
-    (1) the next word that comes after the instance of the target_word.
-    (2) the target_word,
-    (3) an array of n words before the instance of the target_word
-    """
-    instances = []
-    for i, word in enumerate(words_array):
-        if word == target_word:
-            j = i - 1 # the last index before the current one
-            words_before_target = []
-            while j > i - n and j >= 0:
-                words_before_target.append(words_array[j])
-                j -= 1
-            word_after_target = words_array[i+1]
-            instance = [word_after_target, target_word] + words_before_target
-            instances.append(instance)
+def nOrderMarkov(n,my_tweet,words):
+    instances = {}
+    if len(my_tweet) >= n:
+        target_sequence = my_tweet[-n]
+    else:
+        target_sequence = my_tweet
+    max_length = 0
+    for i in range(len(words)-1):
+        j = -1
+        k = i
+        while k >= 0 and k < len(words) and abs(j) <= len(target_sequence):
+            if words[k] == target_sequence[j]:
+                k-=1
+                j-=1
+            else:
+                break
+        # if even one word matched...
+        if j < -1:
+            # j is negative so check which is lowest,
+                # instead of using abs or j*-1
+            max_length = min(j,max_length)
+            if j <= max_length//EPSILON:
+                _key = words[i+1]
+                inInstances = instances.get(_key,False)
+                if inInstances:
+                    instances[_key]+=1
+                else:
+                    instances[_key]=1
+    # !!! may be empty. let the exterior scope handle it.
     return instances
 
-def nOrderMarkov(instances):
-    """
-    Takes in an array of word "instances".
-    Instances are arrays that contain:
-    (1) the next word that comes after the instance of the target_word.
-    (2) the target_word,
-    (3) an array of n words before the instance of the target_word.
-    Returns a histogram of keys to counts.
-    Keys consist of tuples of (next_word, target_word, words_before_target)
-    """
-    myDict = {}
-    for instance in instances:
-        _key = tuple(instance)
-        if _key not in myDict:
-            myDict[_key] = 1
-        else:
-            myDict[_key] += 1
-    keys = list(myDict.keys())
-    counts = list(myDict.values())
-    return keys, counts
+def pick_next_word(histogram_instances):
+    # not the best time complexity...
+    next_words = []
+    most_frequent = heapq.nlargest(10,list(histogram_instances.values()))
+    most_frequent = set(most_frequent)
+    for word,count in histogram_instances.items():
+        if count in most_frequent:
+            next_words.append(word)
+    rand_int = randint(0,len(next_words)-1)
+    return next_words[rand_int]
 
-def check_chars(myTweet):
-    """ Checks to see how many characters there are in myTweet.
-    If there are less than 140 chars, then it returns True.
-    """
-    return True if len(myTweet) < 141 else False
+def pick_random_word(words):
+    rand_int = randint(0,len(words)-1)
+    return words[rand_int]
 
 def get_tweet(file):
     """
@@ -105,46 +100,29 @@ def get_tweet(file):
     words = arrayFileWords(file)
     rand_int = randint(0,len(words)-3000)
     word = words[rand_int]
-
     # Starting off with an uppercase word...
     for i in range(rand_int):
         for c in words[i]:
             if c.isupper():
                 word = words[i]
                 break
-    myTweet = word
-    while check_chars(myTweet):
-        n = randint(3,7) # look anywhere from 3 to words 7 before the target
-        instances = wordBeforeAfter(n, word, words)
-        keys, counts = nOrderMarkov(instances)
-        max_count = 0
-        stored = deque()
-        # Creates a queue of indices into keys.
-        # Only appends to queue if the count of that particular key is higher
-            # than half the current maximum count.
-            # Kind of a wonky way of doing it, but it introduces variation.
-        for i in range(len(counts)):
-            count = counts[i]
-            if count > max_count//2:
-                if len(stored) < n:
-                    stored.append(i)
-                else:
-                    stored.popleft()
-                    stored.append(i)
-                max_count = max(count,max_count)
-
-        rand_int = randint(0, len(stored)-1)
-        rand_index_into_keys = stored[rand_int]
-        # the first word of key in keys is the next_word after the target.
-        next_word = keys[rand_index_into_keys][0]
-        word = next_word
-        myTweet += " "
-        myTweet += word
+    my_tweet = [word]
+    while check_chars(my_tweet):
+        if ORDER:
+            n = ORDER
+        else:
+            n = randint(7,50)
+        instances = nOrderMarkov(n, my_tweet, words)
+        if instances:
+            next_word = pick_next_word(instances)
+            my_tweet.append(next_word)
+        else:
+            next_word = pick_random_word(words)
+            print(next_word)
+            my_tweet.append(next_word)
     else:
-        return myTweet
+        return " ".join(my_tweet)
 
 if __name__ == '__main__':
-    file = sys.argv[1]
-    word = sys.argv[2]
-    n = sys.argv[3]
-    print(get_tweet(file,word,n))
+    file = '../public/data/Grimm.md'
+    print(get_tweet(file))
