@@ -17,8 +17,10 @@ def _main():
     # file = 'public/data/Grimm.md'
     # file = 'public/data/Woolf.md'
     # file = 'public/data/Lovecraft.md'
-    file = 'public/data/Poe.md'
+    # file = 'public/data/Poe.md'
     # file = 'public/data/Rowling.md'
+    file = 'public/data/Shakespeare.md'
+
 
     _tweet = get_tweet(file)
     return render_template('index.html', title='Home', tweet=_tweet)

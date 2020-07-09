@@ -4,7 +4,7 @@ from random import randint
 import heapq
 
 # hyperparameters
-ORDER = 100 # the order of the markov model.
+ORDER = 50 # the order of the markov model.
 EPSILON = 2 # the amount to floor divide the max_length. a higher number allows
             # more words to be accepted despite how few words back they match the
             # sequence
@@ -22,7 +22,7 @@ def arrayFileWords(file):
 def tokenize_punc(array):
     """opens an array of strings, cycles through each word and then each character
     of a word and replaces that word with an exact copy but without punctuation. returns the array."""
-    punctuation = [";", ".","!","?"]
+    punctuation = [";",".","!","?"]
     for i in range(len(array)):
         j = len(array[i]) - 1
         while j >= 0 and array[i][j] in punctuation:
