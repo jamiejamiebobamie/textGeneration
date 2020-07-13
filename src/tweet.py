@@ -1,15 +1,16 @@
 from collections import deque, Counter
 import sys
+import os
 from random import randint
 import heapq
 
 # hyperparameters
 ORDER = 100 # the order of the markov model.
-EPSILON = 2 # the amount to floor divide the max_length. a higher number allows
-            # more words to be accepted despite how few words back they match the
-            # sequence
-NUM_TWEETS = 3
 
+# unused helper function.
+def pick_random_file(folder_path):
+    files = os.listdir(folder_path)
+    return path +"/"+ files[randint(0,len(files)-1)]
 
 def arrayFileWords(file):
     """
@@ -19,16 +20,17 @@ def arrayFileWords(file):
     f.close()
     return array
 
-# IN PROGRESS...
 def tokenize_punc(words):
     """
     """
     punctuation = [";",".","!","?",",","\""]
     i = 0
+    store_punc = []
     while i < len(words):
         j = 0
         new_word = []
-        punc = []
+        # keep track of the index
+        punc = [i]
         while j < len(words[i]):
             if words[i][j] in punctuation:
                 punc.append(words[i][j])
@@ -36,32 +38,50 @@ def tokenize_punc(words):
                 new_word.append(words[i][j])
             j+=1
         words[i] = "".join(new_word)
-        # all punctuation is pulled from the word and placed as new tokens
-            # after the word.
-        j = 0
-        while j < len(punc):
-            i+=1
-            words.insert(i,punc[j])
-            j+=1
+        store_punc.append(punc)
         i+=1
-    return words
+    new_words = []
+    j = 0
+    for i in range(len(words)):
+        index_of_punc = store_punc[j][0]
+        if i == index_of_punc:
+            # append the original word and then append the stored punctuation
+                # associated with that index.
+            new_words.append(words[i])
+            for k in range(1,len(store_punc[j])):
+                new_words.append(store_punc[j][k])
+            # increment the counter to look at the next punctuation
+            j+=1
+        else:
+            new_words.append(words[i])
+    return new_words
+
+def write_tokenized_file(read_filepath):
+    """
+    """
+    words_array = arrayFileWords(read_filepath)
+    tokenized_words_array = tokenize_punc(words_array)
+
+    filepath = read_filepath.split("/")
+    write_filename = filepath[-1]
+    relative_path = "/".join(filepath[:-1])
+    write_filepath = "./"+relative_path+write_filename
+    with open(write_filepath, "w") as new_file:
+        for token in tokenized_words_array:
+            new_file.write(token + " ")
 
 def check_chars(my_tweet):
     """
     """
     count = 0
-    for word in my_tweet:
-        count+=len(word)
-        if count > 400:
-            return False
-    return True
+    return True if len(my_tweet) < 100 else False
 
 def stop_after_punc(my_tweet):
     """
     """
     punc = [";",".","!","?",",","\""]
     stop_punc = [".","!","?"]
-    _tweet = []
+    tweet = []
     j = 0
     for i in range(len(my_tweet)):
         if my_tweet[i] in punc:
@@ -69,14 +89,14 @@ def stop_after_punc(my_tweet):
                 break
             else:
                 part = " ".join(my_tweet[j:i])+my_tweet[i]
-                _tweet.append(part)
+                tweet.append(part)
                 if i + 1 < len(my_tweet):
                     j = i + 1
                 else:
                     j = i
     last_part = " ".join(my_tweet[j:i])+my_tweet[i]
-    _tweet.append(last_part)
-    return _tweet
+    tweet.append(last_part)
+    return tweet
 
 def nOrderMarkov(n,my_tweet,words):
     """
@@ -87,7 +107,7 @@ def nOrderMarkov(n,my_tweet,words):
     else:
         target_sequence = my_tweet
     max_length = 0
-    for i in range(len(words)-1):
+    for i in range(len(words) - 1):
         j = -1
         k = i
         while k >= 0 and k < len(words) and abs(j) <= len(target_sequence):
@@ -96,25 +116,23 @@ def nOrderMarkov(n,my_tweet,words):
                 j-=1
             else:
                 break
-        # if even one word matched...
-        if j < -1:
-            # j is negative so check which is lowest,
-                # instead of using abs or j*-1
+        match = j < -1
+        if match:
+            # j is a negative index counting from the back of the sequence.
             max_length = min(j,max_length)
-            if j <= max_length//EPSILON:
+            if j <= max_length:
                 _key = words[i+1]
                 inInstances = instances.get(_key,False)
                 if inInstances:
                     instances[_key]+=1
                 else:
                     instances[_key]=1
-    # !!! may be empty. let the exterior scope handle it.
+    # may be empty.
     return instances
 
 def pick_next_word(histogram_instances):
     """
     """
-    # not the best time complexity...
     next_words = []
     most_frequent = heapq.nlargest(10,list(histogram_instances.values()))
     most_frequent = set(most_frequent)
@@ -134,10 +152,9 @@ def get_tweet(file):
     """
     """
     words = arrayFileWords(file)
-    words = tokenize_punc(words)
-    tweets = []
-    # while len(tweets) < NUM_TWEETS:
+    # words = tokenize_punc(words)
     rand_int = randint(0,len(words)-len(words)//3)
+    # intialize word to a random word in case an uppercase word cannot be found.
     word = words[rand_int]
     # Starting off with an uppercase word...
     for i in range(rand_int):
@@ -145,6 +162,8 @@ def get_tweet(file):
             if c.isupper():
                 word = words[i]
                 break
+            else:
+                continue # only check the first letter of each word
     my_tweet = [word]
     while check_chars(my_tweet):
         if ORDER:
@@ -154,18 +173,15 @@ def get_tweet(file):
         instances = nOrderMarkov(n, my_tweet, words)
         if instances:
             next_word = pick_next_word(instances)
-            my_tweet.append(next_word)
         else:
             next_word = pick_random_word(words)
-            print(next_word)
-            my_tweet.append(next_word)
+
+        my_tweet.append(next_word)
     else:
         my_tweet = stop_after_punc(my_tweet)
         my_tweet = " ".join(my_tweet)
         return my_tweet
-            # tweets.append(my_tweet)
-    # return tweets
 
 if __name__ == '__main__':
-    file = '../public/data/Grimm.md'
-    print(get_tweet(file))
+    _, read_filepath = sys.argv
+    write_tokenized_file(read_filepath)
