@@ -12,6 +12,11 @@ def pick_random_file(folder_path):
     files = os.listdir(folder_path)
     return path +"/"+ files[randint(0,len(files)-1)]
 
+# unused helper function.
+def pick_random_from_array(array):
+    rand_int = randint(0,len(array)-1)
+    return array[rand_int]
+
 def arrayFileWords(file):
     """
     """

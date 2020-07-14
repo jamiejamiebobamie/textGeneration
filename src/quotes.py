@@ -15,5 +15,6 @@ if __name__ == '__main__':
         quote = get_tweet(read_filepath)
         with open(write_filepath, "a") as new_or_old_file:
             new_or_old_file.write(quote + "\n")
+        print(quote)
         print(str(i+1) + " of " + str(num_tweets))
         i+=1
