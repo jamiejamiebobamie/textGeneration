@@ -1,7 +1,7 @@
 from web_functions import get_quote
 import sys
 
-# command line file for generating quotes in bulk.
+# command line python file for generating quotes in bulk.
 if __name__ == '__main__':
     _, read_filepath, num_quotes = sys.argv
 
@@ -17,5 +17,5 @@ if __name__ == '__main__':
         with open(write_filepath, "a") as new_or_old_file:
             new_or_old_file.write(quote + "\n")
         print(quote)
-        print(str(i+1) + " of " + str(num_quotes))
         i+=1
+        print(str(i) + " of " + str(num_quotes))

@@ -75,11 +75,11 @@ def write_tokenized_file(read_filepath):
         for token in tokenized_words_array:
             new_file.write(token + " ")
 
-def check_chars(my_quote):
+def check_chars(my_quote, max_chars):
     """
     """
     count = 0
-    return True if len(my_quote) < 100 else False
+    return True if len(my_quote) < max_chars else False
 
 def stop_after_punc(my_quote):
     """
@@ -170,7 +170,7 @@ def get_quote(file):
             else:
                 continue # only check the first letter of each word
     my_quote = [word]
-    while check_chars(my_quote):
+    while check_chars(my_quote, 100):
         if ORDER:
             n = ORDER
         else:
@@ -184,6 +184,31 @@ def get_quote(file):
         my_quote.append(next_word)
     else:
         my_quote = stop_after_punc(my_quote)
+        my_quote = " ".join(my_quote)
+        return my_quote
+
+def get_quote_from_input(input):
+    """
+    """
+    words = input.split(" ")
+    words = tokenize_punc(words)
+    rand_int = randint(0,len(words)-1)
+    # intialize word to a random word from the corpus.s
+    word = words[rand_int]
+    my_quote = [word]
+    while check_chars(my_quote, len(input)):
+        if ORDER:
+            n = ORDER
+        else:
+            n = 100
+        instances = nOrderMarkov(n, my_quote, words)
+        if instances:
+            next_word = pick_next_word(instances)
+        else:
+            next_word = pick_random_word(words)
+
+        my_quote.append(next_word)
+    else:
         my_quote = " ".join(my_quote)
         return my_quote
 
