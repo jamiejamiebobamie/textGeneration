@@ -1,6 +1,7 @@
-from tweet import get_quote
+from web_functions import get_quote
 import sys
 
+# command line file for generating quotes in bulk.
 if __name__ == '__main__':
     _, read_filepath, num_quotes = sys.argv
 

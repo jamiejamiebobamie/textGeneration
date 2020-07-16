@@ -1,9 +1,10 @@
 from flask import Flask, render_template
 app = Flask(__name__)
-from src.tweet import get_quote, pick_random_from_array
+from src.web_functions import get_quote, pick_random_from_array
 from pymongo import MongoClient
 from random import randrange
 
+# pull quote from db.
 @app.route('/')
 def _main():
     db = client.database
@@ -12,6 +13,7 @@ def _main():
     quote = quotes_collection.find()[randrange(count)]["quote"]
     return render_template('index.html', title='Home',quote=quote)
 
+# add quote to db.
 @app.route('/generate')
 def generate():
     db = client.database
@@ -20,6 +22,7 @@ def generate():
     quotes_collection.insert_one(quote_document)
     return render_template('index.html', title='Home',quote=quote)
 
+# pull quote from file route.
 @app.route('/pregenerated')
 def pregenerated():
     file = 'src/quotes_tokenized_Shakespeare.md'
@@ -30,22 +33,19 @@ def pregenerated():
     quote = pick_random_from_array(quotes)
     return render_template('index.html', title='Home',quote=quote)
 
-# old route.
-@app.route('/addToPregenerated')
-def addToPregenerated():
-    quote = "This a deperecated route. Go back to the homepage."
-    return render_template('index.html', title='Home',quote=quote)
+# pull quote from db and serve as JSON.
+    # should I password protect this?
+@app.route('/api/v1/getQuote')
+def serve_quote():
+    db = client.database
+    quotes_collection = db.quotes
+    count = quotes_collection.count()
+    quote = quotes_collection.find()[randrange(count)]
+    return {"quote": quote["quote"]}
 
-    # code used to add to the pregenerated quotes file.
-    read_filepath =  "./public/data/tokenized_Shakespeare.md"
-    filepath = read_filepath.split("/")
-    write_filename = filepath[-1]
-    relative_path = "/".join(filepath[:-1])
-    write_filepath = "./src/quotes_"+write_filename
-    quote = get_quote(read_filepath)
-    with open(write_filepath, "a") as quotes:
-        quotes.write(quote + "\n")
-    return render_template('index.html', title='Home',quote=quote)
+# add route for users to add text to the
+    # "./public/data/quotes_tokenized_Shakespeare.md" file.
+    # need CORS with password protection.
 
 if __name__ == '__main__':
     client = MongoClient()
