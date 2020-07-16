@@ -1,8 +1,8 @@
-from tweet import get_tweet
+from tweet import get_quote
 import sys
 
 if __name__ == '__main__':
-    _, read_filepath, num_tweets = sys.argv
+    _, read_filepath, num_quotes = sys.argv
 
     filepath = read_filepath.split("/")
     write_filename = filepath[-1]
@@ -10,11 +10,11 @@ if __name__ == '__main__':
     write_filepath = "./quotes_"+write_filename
 
     i = 0
-    num_tweets = int(num_tweets)
-    while i < num_tweets:
-        quote = get_tweet(read_filepath)
+    num_quotes = int(num_quotes)
+    while i < num_quotes:
+        quote = get_quote(read_filepath)
         with open(write_filepath, "a") as new_or_old_file:
             new_or_old_file.write(quote + "\n")
         print(quote)
-        print(str(i+1) + " of " + str(num_tweets))
+        print(str(i+1) + " of " + str(num_quotes))
         i+=1

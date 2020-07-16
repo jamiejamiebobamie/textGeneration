@@ -75,42 +75,42 @@ def write_tokenized_file(read_filepath):
         for token in tokenized_words_array:
             new_file.write(token + " ")
 
-def check_chars(my_tweet):
+def check_chars(my_quote):
     """
     """
     count = 0
-    return True if len(my_tweet) < 100 else False
+    return True if len(my_quote) < 100 else False
 
-def stop_after_punc(my_tweet):
+def stop_after_punc(my_quote):
     """
     """
     punc = [";",".","!","?",",","\""]
     stop_punc = [".","!","?"]
-    tweet = []
+    quote = []
     j = 0
-    for i in range(len(my_tweet)):
-        if my_tweet[i] in punc:
-            if i > 20 and my_tweet[i] in stop_punc:
+    for i in range(len(my_quote)):
+        if my_quote[i] in punc:
+            if i > 20 and my_quote[i] in stop_punc:
                 break
             else:
-                part = " ".join(my_tweet[j:i])+my_tweet[i]
-                tweet.append(part)
-                if i + 1 < len(my_tweet):
+                part = " ".join(my_quote[j:i])+my_quote[i]
+                quote.append(part)
+                if i + 1 < len(my_quote):
                     j = i + 1
                 else:
                     j = i
-    last_part = " ".join(my_tweet[j:i])+my_tweet[i]
-    tweet.append(last_part)
-    return tweet
+    last_part = " ".join(my_quote[j:i])+my_quote[i]
+    quote.append(last_part)
+    return quote
 
-def nOrderMarkov(n,my_tweet,words):
+def nOrderMarkov(n,my_quote,words):
     """
     """
     instances = {}
-    if len(my_tweet) >= n:
-        target_sequence = my_tweet[-n]
+    if len(my_quote) >= n:
+        target_sequence = my_quote[-n]
     else:
-        target_sequence = my_tweet
+        target_sequence = my_quote
     max_length = 0
     for i in range(len(words) - 1):
         j = -1
@@ -153,7 +153,7 @@ def pick_random_word(words):
     rand_int = randint(0,len(words)-1)
     return words[rand_int]
 
-def get_tweet(file):
+def get_quote(file):
     """
     """
     words = arrayFileWords(file)
@@ -169,23 +169,23 @@ def get_tweet(file):
                 break
             else:
                 continue # only check the first letter of each word
-    my_tweet = [word]
-    while check_chars(my_tweet):
+    my_quote = [word]
+    while check_chars(my_quote):
         if ORDER:
             n = ORDER
         else:
             n = 100
-        instances = nOrderMarkov(n, my_tweet, words)
+        instances = nOrderMarkov(n, my_quote, words)
         if instances:
             next_word = pick_next_word(instances)
         else:
             next_word = pick_random_word(words)
 
-        my_tweet.append(next_word)
+        my_quote.append(next_word)
     else:
-        my_tweet = stop_after_punc(my_tweet)
-        my_tweet = " ".join(my_tweet)
-        return my_tweet
+        my_quote = stop_after_punc(my_quote)
+        my_quote = " ".join(my_quote)
+        return my_quote
 
 if __name__ == '__main__':
     _, read_filepath = sys.argv
