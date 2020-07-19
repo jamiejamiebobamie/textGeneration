@@ -21,11 +21,11 @@ def _main():
     db = client.database
     quotes_collection = db.quotes
     count = quotes_collection.count()
-    # quote = quotes_collection.find()[randrange(count)]["quote"]
+    quote = quotes_collection.find()[randrange(count)]["quote"]
 
-    # new code using mongoengine python plugin
-    quote_document = quotes_collection.find()[randrange(count)]
-    quote = quote_document.quote
+    # # new code using mongoengine python plugin
+    # quote_document = quotes_collection.find()[randrange(count)]
+    # quote = quote_document.quote
 
     return render_template('index.html', title='Home',quote=quote)
 
