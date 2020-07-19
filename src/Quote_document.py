@@ -1,4 +1,4 @@
-from mongoengine import *                           # To define a schema for a
+from mongoengine import *
                                                     # document, we create a
 class Metadata(EmbeddedDocument):                   # class that inherits from
     tags = ListField(StringField())                 # Document.

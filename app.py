@@ -32,7 +32,7 @@ def _main():
 # add quote to db.
 @app.route('/generate')
 def generate():
-    read_filepath =  "./public/data/tokenized_Shakespeare.md"
+    read_filepath = "./public/data/tokenized_Shakespeare.md"
     quote = get_quote(read_filepath)
     new_quote_document = Quote()
     new_quote_document.quote = quote
