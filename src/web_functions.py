@@ -81,7 +81,7 @@ def check_chars(my_quote, max_chars):
     count = 0
     return True if len(my_quote) < max_chars else False
 
-def stop_after_punc(my_quote):
+def stop_after_punc(my_quote, limit_token_num):
     """
     """
     punc = [";",".","!","?",",","\""]
@@ -90,7 +90,7 @@ def stop_after_punc(my_quote):
     j = 0
     for i in range(len(my_quote)):
         if my_quote[i] in punc:
-            if i > 20 and my_quote[i] in stop_punc:
+            if i > limit_token_num and my_quote[i] in stop_punc:
                 break
             else:
                 part = " ".join(my_quote[j:i])+my_quote[i]
@@ -163,14 +163,14 @@ def get_quote(file):
     word = words[rand_int]
     # Starting off with an uppercase word...
     for i in range(rand_int):
-        for c in words[i]:
-            if c.isupper():
+        for j in range(len(words[i])):
+            if words[i][j].isupper() and j==0:
                 word = words[i]
                 break
             else:
                 continue # only check the first letter of each word
     my_quote = [word]
-    while check_chars(my_quote, 100):
+    while check_chars(my_quote, 500):
         if ORDER:
             n = ORDER
         else:
@@ -183,11 +183,62 @@ def get_quote(file):
 
         my_quote.append(next_word)
     else:
-        my_quote = stop_after_punc(my_quote)
+        my_quote = stop_after_punc(my_quote,20)
         my_quote = " ".join(my_quote)
         return my_quote
 
-def get_quote_from_input(input):
+def get_grammatical_quote_from_input(input):
+    """
+    """
+    count = 0
+    while count < 30:
+        try:
+            words = input.split(" ")
+            words = tokenize_punc(words)
+            not_found_count = 0
+            found_upper = False
+            # not found count is unecessary *****
+            while not found_upper and not_found_count < 30:
+                rand_int = randint(0,len(input)-1)
+                # intialize word to a random word in case an uppercase word cannot be found.
+                word = words[rand_int]
+                # Starting off with an uppercase word...
+                i = rand_int
+                while not found_upper and i < len(input):
+                    for j in range(len(words[i])):
+                        if words[i][j].isupper() and j == 0 : # fixed problem here *****
+                            found_upper = True
+                            word = words[i]
+                            break
+                        else:
+                            continue # only check the first letter of each word
+                    i+=1
+                not_found_count+=1
+            print(not_found_count,word)
+            my_quote = [word]
+            char_max = min(150,len(input))
+            while check_chars(my_quote, char_max):
+                if ORDER:
+                    n = ORDER
+                else:
+                    n = 100
+                instances = nOrderMarkov(n, my_quote, words)
+                if instances:
+                    next_word = pick_next_word(instances)
+                else:
+                    next_word = pick_random_word(words)
+
+                my_quote.append(next_word)
+            else:
+                my_quote = stop_after_punc(my_quote,70)
+                my_quote = " ".join(my_quote)
+                return my_quote
+        except IndexError:
+            count+=1
+        # print(count)
+    return None
+
+def get_any_quote_from_input(input):
     """
     """
     words = input.split(" ")
@@ -196,7 +247,8 @@ def get_quote_from_input(input):
     # intialize word to a random word from the corpus.s
     word = words[rand_int]
     my_quote = [word]
-    while check_chars(my_quote, len(input)):
+    char_max = min(500,len(input))
+    while check_chars(my_quote, char_max):
         if ORDER:
             n = ORDER
         else:
@@ -206,7 +258,6 @@ def get_quote_from_input(input):
             next_word = pick_next_word(instances)
         else:
             next_word = pick_random_word(words)
-
         my_quote.append(next_word)
     else:
         my_quote = " ".join(my_quote)

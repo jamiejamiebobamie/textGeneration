@@ -1,23 +1,22 @@
 import os
 from flask import Flask, render_template, request
 app = Flask(__name__)
-from src.web_functions import get_quote, pick_random_from_array, get_quote_from_input
-from pymongo import MongoClient
-import src.Quote_document
+
+# from urlparse import urlsplit
+MONGO_URL = os.getenv('MONGODB_URI')
+# parsed = urlsplit(url)
+# db_name = parsed.path[1:]
+app.config['MONGO_URI'] = MONGO_URL
+from pymongo import MongoClient#, Connection
+client = MongoClient()
+
+from random import randrange
+from src.web_functions import get_quote, pick_random_from_array, get_grammatical_quote_from_input, get_any_quote_from_input
+from src.Quote_document import Quote
+
 from flask_cors import CORS, cross_origin
 # public API, allow all requests *
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-from random import randrange
-
-# MONGO_URL = os.getenv('MONGOLAB_URI', 'mongodb://localhost:27017/database')
-# MONGO_URL = os.environ.get('MONGO_URL')
-# if not MONGO_URL:
-#     MONGO_URL = "mongodb://localhost:27017/rest";
-
-# app.config['MONGO_URI'] = MONGO_URL
-# client = PyMongo(app)
-client = MongoClient()
-# client = PyMongo(app)
 
 # pull quote from db.
 @app.route('/')
@@ -38,8 +37,12 @@ def _main():
 def generate():
     read_filepath = "./public/data/tokenized_Shakespeare.md"
     quote = get_quote(read_filepath)
-    new_quote_document = Quote()
-    new_quote_document.quote = quote
+    new_quote_document = {"quote":quote}
+
+    # new code using mongoengine python plugin
+
+    # new_quote_document = Quote()
+    # new_quote_document.quote = quote
     db = client.database
     quotes_collection = db.quotes
     quotes_collection.insert_one(new_quote_document)
@@ -72,10 +75,13 @@ def serve_quote():
 def serve_quote_from_input():
     data = request.get_json()
     if data:
-        quote = get_quote_from_input(data)
+        quote = get_grammatical_quote_from_input(data) # attempts to generate a grammatical quote first
+        if not quote:
+            quote = get_any_quote_from_input(data) # generates any sequence
+        # print(quote)
         return {"quote": quote}
     else:
-        return {"quote": ""}
+        return {"quote": "lol"}
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 7000)
