@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request
 app = Flask(__name__)
 from src.web_functions import get_quote, pick_random_from_array, get_quote_from_input
@@ -8,12 +9,15 @@ from flask_cors import CORS, cross_origin
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 from random import randrange
 
+# MONGO_URL = os.getenv('MONGOLAB_URI', 'mongodb://localhost:27017/database')
+# MONGO_URL = os.environ.get('MONGO_URL')
+# if not MONGO_URL:
+#     MONGO_URL = "mongodb://localhost:27017/rest";
 
-#                                                     # Querying is achieved by
-# >>> page.title = "Hello, World!"                    # calling the objects
-# >>> for page in WikiPage.objects:                   # attribute on a document
-# >>>     print page.title
-
+# app.config['MONGO_URI'] = MONGO_URL
+# client = PyMongo(app)
+client = MongoClient()
+# client = PyMongo(app)
 
 # pull quote from db.
 @app.route('/')
@@ -74,5 +78,4 @@ def serve_quote_from_input():
         return {"quote": ""}
 
 if __name__ == '__main__':
-    client = MongoClient()
     app.run(host = '0.0.0.0', port = 7000)
