@@ -154,7 +154,7 @@ def pick_random_word(words):
     return words[rand_int]
 
 def get_quote(file):
-    """
+    """ Assumes input file has been tokenized and tokens are separated by spaces.
     """
     words = arrayFileWords(file)
     # words = tokenize_punc(words)

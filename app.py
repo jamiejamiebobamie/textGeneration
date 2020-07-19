@@ -2,10 +2,18 @@ from flask import Flask, render_template, request
 app = Flask(__name__)
 from src.web_functions import get_quote, pick_random_from_array, get_quote_from_input
 from pymongo import MongoClient
+import src.Quote_document
 from flask_cors import CORS, cross_origin
 # public API, allow all requests *
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 from random import randrange
+
+
+#                                                     # Querying is achieved by
+# >>> page.title = "Hello, World!"                    # calling the objects
+# >>> for page in WikiPage.objects:                   # attribute on a document
+# >>>     print page.title
+
 
 # pull quote from db.
 @app.route('/')
@@ -13,16 +21,24 @@ def _main():
     db = client.database
     quotes_collection = db.quotes
     count = quotes_collection.count()
-    quote = quotes_collection.find()[randrange(count)]["quote"]
+    # quote = quotes_collection.find()[randrange(count)]["quote"]
+
+    # new code using mongoengine python plugin
+    quote_document = quotes_collection.find()[randrange(count)]
+    quote = quote_document.quote
+
     return render_template('index.html', title='Home',quote=quote)
 
 # add quote to db.
 @app.route('/generate')
 def generate():
+    read_filepath =  "./public/data/tokenized_Shakespeare.md"
+    quote = get_quote(read_filepath)
+    new_quote_document = Quote()
+    new_quote_document.quote = quote
     db = client.database
     quotes_collection = db.quotes
-    quote_document = {"quote":quote}
-    quotes_collection.insert_one(quote_document)
+    quotes_collection.insert_one(new_quote_document)
     return render_template('index.html', title='Home',quote=quote)
 
 # pull quote from file.
