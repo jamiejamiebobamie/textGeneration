@@ -11,12 +11,15 @@ from pymongo import MongoClient#, Connection
 client = MongoClient()
 
 from random import randrange
-from src.web_functions import get_quote, pick_random_from_array, get_grammatical_quote_from_input, get_any_quote_from_input
+from src.web_functions import get_quote, pick_random_from_array, get_grammatical_quote_from_input, get_any_quote_from_input, get_grammatical_quote_from_input_array
 from src.Quote_document import Quote
 
 from flask_cors import CORS, cross_origin
 # public API, allow all requests *
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+from bs4 import BeautifulSoup
+import requests
 
 # pull quote from db.
 @app.route('/')
@@ -82,6 +85,39 @@ def serve_quote_from_input():
         return {"quote": quote}
     else:
         return {"quote": "lol"}
+
+# create quote from request.body and return as JSON.
+@app.route('/api/v1/quote-from-url',methods=['POST'])
+@cross_origin()
+def serve_quote_from_url():
+    url = request.get_json()
+    print(url)
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    p_array = soup.find_all("p")
+    pre_array = soup.find_all("pre")
+    data = p_array + pre_array
+    if data:
+        for i in range(len(data)):
+            stack = 0
+            entry = []
+            data[i] = data[i].prettify()
+            for c in data[i]:
+                if c == "<":
+                    stack+=1
+                elif c == ">":
+                    stack-=1
+                elif not stack:
+                    entry.append(c)
+            data[i] = "".join(entry)
+    else:
+        data = soup.get_text().split(" ")
+    if data:
+        quote = get_grammatical_quote_from_input_array(data)
+    else:
+        quote = ""
+
+    return {"quote": quote}
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 7000)

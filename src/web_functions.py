@@ -238,6 +238,57 @@ def get_grammatical_quote_from_input(input):
         # print(count)
     return None
 
+def get_grammatical_quote_from_input_array(array):
+    """
+    """
+    count = 0
+    while count < 30:
+        try:
+            words = array
+            words = tokenize_punc(words)
+            not_found_count = 0
+            found_upper = False
+            # not found count is unecessary *****
+            while not found_upper and not_found_count < 30:
+                rand_int = randint(0,len(array)-1)
+                # intialize word to a random word in case an uppercase word cannot be found.
+                word = words[rand_int]
+                # Starting off with an uppercase word...
+                i = rand_int
+                while not found_upper and i < len(array):
+                    for j in range(len(words[i])):
+                        if words[i][j].isupper() and j == 0 : # fixed problem here *****
+                            found_upper = True
+                            word = words[i]
+                            break
+                        else:
+                            continue # only check the first letter of each word
+                    i+=1
+                not_found_count+=1
+            print(not_found_count,word)
+            my_quote = [word]
+            char_max = min(150,len(array))
+            while check_chars(my_quote, char_max):
+                if ORDER:
+                    n = ORDER
+                else:
+                    n = 100
+                instances = nOrderMarkov(n, my_quote, words)
+                if instances:
+                    next_word = pick_next_word(instances)
+                else:
+                    next_word = pick_random_word(words)
+
+                my_quote.append(next_word)
+            else:
+                my_quote = stop_after_punc(my_quote,70)
+                my_quote = " ".join(my_quote)
+                return my_quote
+        except IndexError:
+            count+=1
+        # print(count)
+    return None
+
 def get_any_quote_from_input(input):
     """
     """
