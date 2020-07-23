@@ -214,7 +214,7 @@ def get_grammatical_quote_from_input(input):
                             continue # only check the first letter of each word
                     i+=1
                 not_found_count+=1
-            print(not_found_count,word)
+            # print(not_found_count,word)
             my_quote = [word]
             char_max = min(150,len(input))
             while check_chars(my_quote, char_max):
@@ -265,9 +265,9 @@ def get_grammatical_quote_from_input_array(array):
                             continue # only check the first letter of each word
                     i+=1
                 not_found_count+=1
-            print(not_found_count,word)
+            # print(not_found_count,word)
             my_quote = [word]
-            char_max = min(150,len(array))
+            char_max = min(80,len(array))
             while check_chars(my_quote, char_max):
                 if ORDER:
                     n = ORDER
@@ -281,7 +281,7 @@ def get_grammatical_quote_from_input_array(array):
 
                 my_quote.append(next_word)
             else:
-                my_quote = stop_after_punc(my_quote,70)
+                my_quote = stop_after_punc(my_quote,20)
                 my_quote = " ".join(my_quote)
                 return my_quote
         except IndexError:
