@@ -49,7 +49,7 @@ def _main():
 
 # pull quote from db.
 @app.route('/testDB')
-def _main():
+def test_DB():
     db = client.database
     quotes_collection = db.quotes
     count = quotes_collection.count()
