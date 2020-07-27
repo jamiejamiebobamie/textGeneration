@@ -148,12 +148,13 @@ def serve_quote_from_twitter():
         #           hashtags.append(hashtag)
       # if status.created_at < end_date:
       #   break
-      if tweet_count > 1000:
+      if tweet_count > 5000:
           break
 
-    print(tweet_content)
+    # print(tweet_content)
 
     words_from_tweets = []
+    forbidden = set(['@','#','&','…'])
     # count = 0
     for tweet in tweet_content:
         # if count > 30:
@@ -165,12 +166,18 @@ def serve_quote_from_twitter():
             # print(char)
             # count+=1
             if char == " ":
-                new_word = "".join(word)
-                # print(new_word)
-                words_from_tweets.append(new_word)
-                word = []
+                if len(word):
+                #     if word[0] != "@" and word[0] != "#" and word[0] != "&" and word[-1]!="…" and "http" not in word:
+                        # print(word[-1]=="…")
+                    new_word = "".join(word)
+                    words_from_tweets.append(new_word)
+                    word = []
             else:
-                word.append(char)
+                if char not in forbidden:
+                    word.append(char)
+                else:
+                    word = []
+
     print(words_from_tweets)
 
     if words_from_tweets:
