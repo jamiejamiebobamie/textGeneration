@@ -30,8 +30,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 #
 # from tweepy import Cursor
 # import tweepy
-#
-# from datetime import datetime, date, time, timedelta
+
 
 # pull quote from db.
 @app.route('/')
