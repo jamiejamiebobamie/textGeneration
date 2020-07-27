@@ -32,11 +32,11 @@ from datetime import datetime, date, time, timedelta
 # pull quote from db.
 @app.route('/')
 def _main():
-    db = client.database
-    quotes_collection = db.quotes
-    count = quotes_collection.count()
-    quote = quotes_collection.find()[randrange(count)]["quote"]
-
+    # db = client.database
+    # quotes_collection = db.quotes
+    # count = quotes_collection.count()
+    # quote = quotes_collection.find()[randrange(count)]["quote"]
+    quote = "quote"
     # # new code using mongoengine python plugin
     # quote_document = quotes_collection.find()[randrange(count)]
     # quote = quote_document.quote
