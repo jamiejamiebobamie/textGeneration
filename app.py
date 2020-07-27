@@ -24,7 +24,7 @@ from flask_cors import CORS, cross_origin
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # from bs4 import BeautifulSoup
-import requests
+# import requests
 
 from dotenv import load_dotenv
 load_dotenv()
