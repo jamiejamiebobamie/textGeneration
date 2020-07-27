@@ -11,7 +11,7 @@ import pymongo
 # from pymongo import pymongo, MongoClient#, Connection
 # client = pymongo.MongoClient(os.getenv(“MONGODB_URI”, “mongodb://127.0.0.1:27017/database”))
 # client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
-client = pymongo.MongoClient(os.getenv("MONGODB_URI", "mongodb://127.0.0.1:27017/database"))
+client = pymongo.MongoClient(os.getenv("MONGO_URL", "mongodb://127.0.0.1:27017/database"))
 
 
 
@@ -268,4 +268,4 @@ def serve_quote_from_file():
 
 if __name__ == '__main__':
     port = os.getenv("PORT", 7000)
-    app.run(host = '0.0.0.0', port = int(port))
+    app.run(host = '0.0.0.0', port = int(port), debug=True)
