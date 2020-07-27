@@ -1,19 +1,24 @@
 import os
 from flask import Flask, render_template, request
+import pymongo
+from pymongo import MongoClient#, Connection
+MONGO_URL = os.environ.get('MONGO_URL')
+if not MONGO_URL:
+    MONGO_URL = "mongodb://localhost:27017/rest";
 app = Flask(__name__)
+app.config['MONGO_URI'] = MONGO_URL
+mongo = MongoClient()
 
 # from urlparse import urlsplit
 # MONGO_URL = os.getenv('MONGODB_URI')
 # parsed = urlsplit(url)
 # db_name = parsed.path[1:]
 # app.config['MONGO_URI'] = MONGO_URL
-import pymongo
-# from pymongo import pymongo, MongoClient#, Connection
-# client = pymongo.MongoClient(os.getenv(“MONGODB_URI”, “mongodb://127.0.0.1:27017/database”))
-# client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
-client = pymongo.MongoClient(os.getenv("MONGO_URL", "mongodb://127.0.0.1:27017/database"))
-
-
+# import pymongo
+# # from pymongo import pymongo, MongoClient#, Connection
+# # client = pymongo.MongoClient(os.getenv(“MONGODB_URI”, “mongodb://127.0.0.1:27017/database”))
+# # client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
+# client = pymongo.MongoClient(os.getenv("MONGO_URL", "mongodb://127.0.0.1:27017/database"))
 
 from random import randrange
 from src.web_functions import get_quote, pick_random_from_array, get_grammatical_quote_from_input, get_any_quote_from_input, get_grammatical_quote_from_input_array
@@ -50,7 +55,7 @@ def _main():
 # pull quote from db.
 @app.route('/testDB')
 def test_DB():
-    db = client.database
+    db = mongo.db
     quotes_collection = db.quotes
     count = quotes_collection.count()
     quote = quotes_collection.find()[randrange(count)]["quote"]
