@@ -7,8 +7,13 @@ MONGO_URL = os.getenv('MONGODB_URI')
 # parsed = urlsplit(url)
 # db_name = parsed.path[1:]
 app.config['MONGO_URI'] = MONGO_URL
-from pymongo import MongoClient#, Connection
-client = MongoClient()
+import pymongo
+# from pymongo import pymongo, MongoClient#, Connection
+# client = pymongo.MongoClient(os.getenv(“MONGODB_URI”, “mongodb://127.0.0.1:27017/database”))
+# client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
+client = pymongo.MongoClient(os.getenv("MONGODB_URI", "mongodb://127.0.0.1:27017/database"))
+
+
 
 from random import randrange
 from src.web_functions import get_quote, pick_random_from_array, get_grammatical_quote_from_input, get_any_quote_from_input, get_grammatical_quote_from_input_array
@@ -262,4 +267,5 @@ def serve_quote_from_file():
     return {"quote": quote}
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0', port = 7000)
+    port = os.getenv("PORT", 7000)
+    app.run(host = '0.0.0.0', port = int(port))
