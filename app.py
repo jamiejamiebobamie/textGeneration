@@ -136,7 +136,7 @@ def serve_quote_from_twitter():
       if hasattr(status, "text"):
         text = status.text
         tweet_content.append(text)
-      if tweet_count > 1000:
+      if tweet_count > 2000:
           break
 
     words_from_tweets = []
