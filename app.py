@@ -23,13 +23,13 @@ from flask_cors import CORS, cross_origin
 # public API, allow all requests *
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# from bs4 import BeautifulSoup
-# import requests
+from bs4 import BeautifulSoup
+import requests
 
-# from dotenv import load_dotenv
-#
-# from tweepy import Cursor
-# import tweepy
+from dotenv import load_dotenv
+
+from tweepy import Cursor
+import tweepy
 
 
 # pull quote from db.
