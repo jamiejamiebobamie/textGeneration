@@ -267,5 +267,6 @@ def serve_quote_from_file():
     return {"quote": quote}
 
 if __name__ == '__main__':
-    port = os.getenv("PORT", 7000)
-    app.run(host = '0.0.0.0', port = int(port), debug=True)
+    # port = os.getenv("PORT", 7000)
+    # app.run(host = '0.0.0.0', port = int(port), debug=True)
+    app.run()
