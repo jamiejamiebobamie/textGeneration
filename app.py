@@ -23,7 +23,7 @@ from flask_cors import CORS, cross_origin
 # public API, allow all requests *
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 import requests
 
 from dotenv import load_dotenv
@@ -224,29 +224,30 @@ def serve_quote_from_twitter():
 def serve_quote_from_url():
     url = request.get_json()
     page = requests.get(url)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    p_array = soup.find_all("p")
-    pre_array = soup.find_all("pre")
-    data = p_array + pre_array
-    if data:
-        for i in range(len(data)):
-            stack = 0
-            entry = []
-            data[i] = data[i].prettify()
-            for c in data[i]:
-                if c == "<":
-                    stack+=1
-                elif c == ">":
-                    stack-=1
-                elif not stack:
-                    entry.append(c)
-            data[i] = "".join(entry)
-    else:
-        data = soup.get_text().split(" ")
-    if data:
-        quote = get_grammatical_quote_from_input_array(data)
-    else:
-        quote = ""
+    # soup = BeautifulSoup(page.content, 'html.parser')
+    # p_array = soup.find_all("p")
+    # pre_array = soup.find_all("pre")
+    # data = p_array + pre_array
+    # if data:
+    #     for i in range(len(data)):
+    #         stack = 0
+    #         entry = []
+    #         data[i] = data[i].prettify()
+    #         for c in data[i]:
+    #             if c == "<":
+    #                 stack+=1
+    #             elif c == ">":
+    #                 stack-=1
+    #             elif not stack:
+    #                 entry.append(c)
+    #         data[i] = "".join(entry)
+    # else:
+    #     data = soup.get_text().split(" ")
+    # if data:
+    #     quote = get_grammatical_quote_from_input_array(data)
+    # else:
+    #     quote = ""
+    quote = ""
     return {"quote": quote}
 
 # create quote from tweets associated a twitter handle and return as JSON.
