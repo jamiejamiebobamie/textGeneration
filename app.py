@@ -39,7 +39,22 @@ def _main():
     # quotes_collection = db.quotes
     # count = quotes_collection.count()
     # quote = quotes_collection.find()[randrange(count)]["quote"]
-    quote = "quote"
+    quote = "hey jamie. i love you."
+    # # new code using mongoengine python plugin
+    # quote_document = quotes_collection.find()[randrange(count)]
+    # quote = quote_document.quote
+
+    return render_template('index.html', title='Home',quote=quote)
+
+
+# pull quote from db.
+@app.route('/testDB')
+def _main():
+    db = client.database
+    quotes_collection = db.quotes
+    count = quotes_collection.count()
+    quote = quotes_collection.find()[randrange(count)]["quote"]
+
     # # new code using mongoengine python plugin
     # quote_document = quotes_collection.find()[randrange(count)]
     # quote = quote_document.quote
@@ -100,48 +115,47 @@ def serve_quote_from_input():
 @app.route('/api/v1/quote-from-twitter-handle',methods=['POST'])
 @cross_origin()
 def serve_quote_from_twitter():
-    # handle = request.get_json()
-    # if len(handle)>1:
-    #     if handle[0] == "@":
-    #         handle = handle[1:]
-    #
-    # auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
-    # auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
-    # api = tweepy.API(auth)
-    # tweet_content = []
-    #
-    # tweet_count = 0
-    # for status in Cursor(api.user_timeline, id=handle).items():
-    #   tweet_count += 1
-    #   if hasattr(status, "text"):
-    #     text = status.text
-    #     tweet_content.append(text)
-    #   if tweet_count > 5000:
-    #       break
-    #
-    # words_from_tweets = []
-    # forbidden = set(['@','#','&','…'])
-    # for tweet in tweet_content:
-    #     word = []
-    #     for char in tweet:
-    #         if char == " ":
-    #             if len(word):
-    #                 new_word = "".join(word)
-    #                 words_from_tweets.append(new_word)
-    #                 word = []
-    #         else:
-    #             if char not in forbidden:
-    #                 word.append(char)
-    #             else:
-    #                 word = []
-    #
-    # print(words_from_tweets)
-    #
-    # if words_from_tweets:
-    #     quote = get_grammatical_quote_from_input_array(words_from_tweets)
-    # else:
-    #     quote = "nope"
-    quote = "nope"
+    handle = request.get_json()
+    if len(handle)>1:
+        if handle[0] == "@":
+            handle = handle[1:]
+
+    auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
+    auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
+    api = tweepy.API(auth)
+    tweet_content = []
+
+    tweet_count = 0
+    for status in Cursor(api.user_timeline, id=handle).items():
+      tweet_count += 1
+      if hasattr(status, "text"):
+        text = status.text
+        tweet_content.append(text)
+      if tweet_count > 5000:
+          break
+
+    words_from_tweets = []
+    forbidden = set(['@','#','&','…'])
+    for tweet in tweet_content:
+        word = []
+        for char in tweet:
+            if char == " ":
+                if len(word):
+                    new_word = "".join(word)
+                    words_from_tweets.append(new_word)
+                    word = []
+            else:
+                if char not in forbidden:
+                    word.append(char)
+                else:
+                    word = []
+
+    print(words_from_tweets)
+
+    if words_from_tweets:
+        quote = get_grammatical_quote_from_input_array(words_from_tweets)
+    else:
+        quote = "out of service"
 
     return {"quote": quote}
 
@@ -151,51 +165,49 @@ def serve_quote_from_twitter():
 def serve_quote_from_url():
     url = request.get_json()
     page = requests.get(url)
-    # soup = BeautifulSoup(page.content, 'html.parser')
-    # p_array = soup.find_all("p")
-    # pre_array = soup.find_all("pre")
-    # data = p_array + pre_array
-    # if data:
-    #     for i in range(len(data)):
-    #         stack = 0
-    #         entry = []
-    #         data[i] = data[i].prettify()
-    #         for c in data[i]:
-    #             if c == "<":
-    #                 stack+=1
-    #             elif c == ">":
-    #                 stack-=1
-    #             elif not stack:
-    #                 entry.append(c)
-    #         data[i] = "".join(entry)
-    # else:
-    #     data = soup.get_text().split(" ")
-    # if data:
-    #     quote = get_grammatical_quote_from_input_array(data)
-    # else:
-    #     quote = ""
-    quote = ""
+    soup = BeautifulSoup(page.content, 'html.parser')
+    p_array = soup.find_all("p")
+    pre_array = soup.find_all("pre")
+    data = p_array + pre_array
+    if data:
+        for i in range(len(data)):
+            stack = 0
+            entry = []
+            data[i] = data[i].prettify()
+            for c in data[i]:
+                if c == "<":
+                    stack+=1
+                elif c == ">":
+                    stack-=1
+                elif not stack:
+                    entry.append(c)
+            data[i] = "".join(entry)
+    else:
+        data = soup.get_text().split(" ")
+    if data:
+        quote = get_grammatical_quote_from_input_array(data)
+    else:
+        quote = ""
     return {"quote": quote}
 
 # create quote from tweets associated a twitter handle and return as JSON.
 @app.route('/api/v1/quote-from-author',methods=['POST'])
 @cross_origin()
 def serve_quote_from_file():
-    # authorName = request.get_json()
-    #
-    # file = 'src/quotes_tokenized_Shakespeare.md'
-    # quotes = []
-    # with open(file, "r") as pregenerated_quotes:
-    #     for line in pregenerated_quotes:
-    #         quotes.append(line)
-    # quote = pick_random_from_array(quotes)
-    quote = "hey"
+    authorName = request.get_json()
+
+    file = 'src/quotes_tokenized_Shakespeare.md'
+    quotes = []
+    with open(file, "r") as pregenerated_quotes:
+        for line in pregenerated_quotes:
+            quotes.append(line)
+    quote = pick_random_from_array(quotes)
     # grimm rowling and shakespeare
     # read_filepath = "./public/data/tokenized_Shakespeare.md"
     # quote = get_quote(read_filepath)
     return {"quote": quote}
 
 if __name__ == '__main__':
-    # port = os.getenv("PORT", 7000)
-    # app.run(host = '0.0.0.0', port = int(port), debug=True)
-    app.run()
+    port = os.getenv("PORT", 7000)
+    app.run(host = '0.0.0.0', port = int(port), debug=True)
+    # app.run() // might need this if heroku doesn't want me to specify the port.
