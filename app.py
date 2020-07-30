@@ -22,7 +22,7 @@ app = Flask(__name__)
 # host = urllib.parse.quote_plus(str(host))
 # database = urllib.parse.quote_plus(str(database))
 
-MONGO_URI = str(os.environ.get('MONGO_URI3'))
+MONGO_URI = str(os.environ.get('MONGO_URI'))
 mongo = MongoClient(MONGO_URI)
 
 
