@@ -224,8 +224,17 @@ def serve_quote_from_twitter():
 
 
     if entry:
-            elapsed_time = datetime.now() - int(entry["timestamp"])
-            print(elapsed_time, datetime.now(), int(entry["timestamp"]))
+            entry_year, entry_month, entry_day = entry["timestamp"].split("-")[:3]
+            print(entry_year, entry_month, entry_day)
+            today_year, today_month, today_day = str(datetime.date.today()).split("-")
+            print(today_year, today_month, today_day)
+            elapsed_years = today_year - entry_year
+            elapsed_months = today_month - entry_month
+            elapsed_days = today_day - entry_day
+            elapsed_year_in_days = elapsed_years * 30 * 12
+            elapsed_month_in_days = elapsed_months * 30
+            elapsed_days += elapsed_year_in_days + elapsed_month_in_days
+            print(elapsed_days)
             # if elapsed_time < 30:
             #     words_from_tweets = entry["words"]
             # else:
