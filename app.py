@@ -2,12 +2,16 @@ import os
 from flask import Flask, render_template, request
 import pymongo
 from pymongo import MongoClient#, Connection
-MONGO_URL = os.environ.get('MONGO_URL')
-if not MONGO_URL:
-    MONGO_URL = "mongodb://localhost:27017/rest";
+# MONGO_URL = os.environ.get('MONGO_URL')
+# if not MONGO_URL:
+#     MONGO_URL = "mongodb://localhost:27017/rest";
 app = Flask(__name__)
-app.config['MONGO_URI'] = MONGO_URL
-mongo = MongoClient()
+# app.config['MONGO_URI'] = MONGO_URL
+MONGO_URI = os.environ.get('MONGO_URI')
+if not MONGO_URI:
+    MONGO_URI = "mongodb://localhost:27017/rest";
+mongo = MongoClient(MONGO_URI)
+
 
 # from urlparse import urlsplit
 # MONGO_URL = os.getenv('MONGODB_URI')
