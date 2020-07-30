@@ -55,6 +55,8 @@ def _main():
 # pull quote from db.
 @app.route('/testDB')
 def test_DB():
+    words_from_tweets = []
+
     db = mongo.db
     collection = db.tweeters
     # count = quotes_collection.count()
@@ -84,7 +86,7 @@ def test_DB():
           if tweet_count > 2000:
               break
 
-        words_from_tweets = []
+        # words_from_tweets = []
         forbidden = set(['@','#','&','…'])
         for tweet in tweet_content:
             word = []
@@ -103,6 +105,7 @@ def test_DB():
         new_document = {"handle":handle, "words": words_from_tweets}
         collection.insert_one(new_document)
         print("inserting to DB")
+
     if words_from_tweets:
         quote = get_grammatical_quote_from_input_array(words_from_tweets)
     else:
