@@ -3,6 +3,8 @@ from flask import Flask, render_template, request
 import pymongo
 from pymongo import MongoClient
 import urllib.parse
+import time
+
 # MONGO_URL = os.environ.get('MONGO_URL')
 # if not MONGO_URL:
 #     MONGO_URL = "mongodb://localhost:27017/rest";
@@ -81,7 +83,7 @@ def test_DB():
     db = mongo.db
     collection = db.tweeters
     # print(db.name, collection.name)
-    print(collection.count())
+    # print(collection.count())
     # quote = str(collection.count())
     # quote = quotes_collection.find()[randrange(count)]["quote"]
 
@@ -216,8 +218,16 @@ def serve_quote_from_twitter():
     # handle = 'Oprah'
     entry = collection.find_one({"handle":handle})
     print(entry)
+
+    # your code
+
+
     if entry:
-        words_from_tweets = entry["words"]
+            elapsed_time = time.time() - entry["timestamp"]
+            print(elapsed_time, time.time(), entry["timestamp"])
+            # if elapsed_time < 30:
+            #     words_from_tweets = entry["words"]
+            # else:
     else:
         if len(handle)>1:
             if handle[0] == "@":
@@ -253,7 +263,7 @@ def serve_quote_from_twitter():
                     else:
                         word = []
 
-        new_document = {"handle":handle, "words": words_from_tweets}
+        new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(time.time())}
         collection.insert_one(new_document)
         print("inserting to DB")
 
