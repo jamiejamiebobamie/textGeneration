@@ -226,7 +226,7 @@ def serve_quote_from_twitter():
     if entry:
             entry_year, entry_month, entry_day = entry["timestamp"].split("-")[:3]
             print(entry_year, entry_month, entry_day)
-            today_year, today_month, today_day = str(datetime.date.today()).split("-")
+            today_year, today_month, today_day = str(datetime.now()).split("-")[:3]
             print(today_year, today_month, today_day)
             elapsed_years = today_year - entry_year
             elapsed_months = today_month - entry_month
