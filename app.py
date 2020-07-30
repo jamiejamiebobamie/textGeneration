@@ -215,6 +215,7 @@ def serve_quote_from_twitter():
 
     # handle = 'Oprah'
     entry = collection.find_one({"handle":handle})
+    print(entry)
     if entry:
         words_from_tweets = entry["words"]
     else:
