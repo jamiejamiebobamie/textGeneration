@@ -3,7 +3,8 @@ from flask import Flask, render_template, request
 import pymongo
 from pymongo import MongoClient
 import urllib.parse
-import time
+# import time
+from datetime import datetime
 
 # MONGO_URL = os.environ.get('MONGO_URL')
 # if not MONGO_URL:
@@ -223,8 +224,8 @@ def serve_quote_from_twitter():
 
 
     if entry:
-            elapsed_time = time.time() - float(entry["timestamp"])
-            print(elapsed_time, time.time(), entry["timestamp"])
+            elapsed_time = datetime.now() - int(entry["timestamp"])
+            print(elapsed_time, datetime.now(), int(entry["timestamp"]))
             # if elapsed_time < 30:
             #     words_from_tweets = entry["words"]
             # else:
@@ -263,7 +264,7 @@ def serve_quote_from_twitter():
                     else:
                         word = []
 
-        new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(time.time())}
+        new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
         collection.insert_one(new_document)
         print("inserting to DB")
 
