@@ -223,7 +223,7 @@ def serve_quote_from_twitter():
 
 
     if entry:
-            elapsed_time = time.time() - entry["timestamp"]
+            elapsed_time = time.time() - float(entry["timestamp"])
             print(elapsed_time, time.time(), entry["timestamp"])
             # if elapsed_time < 30:
             #     words_from_tweets = entry["words"]
