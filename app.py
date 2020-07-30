@@ -203,7 +203,6 @@ def serve_quote_from_twitter():
     if len(handle)>1:
         if handle[0] == "@":
             handle = handle[1:]
-
     db = mongo.db
     collection = db.tweeters
     entry = collection.find_one({"handle":handle})
@@ -237,7 +236,8 @@ def serve_quote_from_twitter():
                         word.append(char)
                     else:
                         word = []
-
+        new_document = {"handle":handle, "words": words_from_tweets}
+        collection.insert_one(new_document)
     if words_from_tweets:
         quote = get_grammatical_quote_from_input_array(words_from_tweets)
     else:
