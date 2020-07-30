@@ -85,7 +85,7 @@ def test_DB():
     # quote = str(collection.count())
     # quote = quotes_collection.find()[randrange(count)]["quote"]
 
-    handle = 'BarackObama'
+    handle = 'Oprah'
     entry = collection.find_one({"handle":handle})
     if entry:
         words_from_tweets = entry["words"]
@@ -203,16 +203,30 @@ def serve_quote_from_twitter():
     if len(handle)>1:
         if handle[0] == "@":
             handle = handle[1:]
+
+    words_from_tweets = []
+
     db = mongo.db
     collection = db.tweeters
+    # print(db.name, collection.name)
+    # print(collection.count())
+    # quote = str(collection.count())
+    # quote = quotes_collection.find()[randrange(count)]["quote"]
+
+    # handle = 'Oprah'
     entry = collection.find_one({"handle":handle})
     if entry:
         words_from_tweets = entry["words"]
     else:
+        if len(handle)>1:
+            if handle[0] == "@":
+                handle = handle[1:]
+
         auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
         auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
         api = tweepy.API(auth)
         tweet_content = []
+
         tweet_count = 0
         for status in Cursor(api.user_timeline, id=handle).items():
           tweet_count += 1
@@ -221,7 +235,8 @@ def serve_quote_from_twitter():
             tweet_content.append(text)
           if tweet_count > 2000:
               break
-        words_from_tweets = []
+
+        # words_from_tweets = []
         forbidden = set(['@','#','&','…'])
         for tweet in tweet_content:
             word = []
@@ -236,12 +251,56 @@ def serve_quote_from_twitter():
                         word.append(char)
                     else:
                         word = []
+
         new_document = {"handle":handle, "words": words_from_tweets}
         collection.insert_one(new_document)
+        print("inserting to DB")
+
     if words_from_tweets:
         quote = get_grammatical_quote_from_input_array(words_from_tweets)
     else:
         quote = "out of service"
+    #
+    #
+    # db = mongo.db
+    # collection = db.tweeters
+    # entry = collection.find_one({"handle":handle})
+    # if entry:
+    #     words_from_tweets = entry["words"]
+    # else:
+    #     auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
+    #     auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
+    #     api = tweepy.API(auth)
+    #     tweet_content = []
+    #     tweet_count = 0
+    #     for status in Cursor(api.user_timeline, id=handle).items():
+    #       tweet_count += 1
+    #       if hasattr(status, "text"):
+    #         text = status.text
+    #         tweet_content.append(text)
+    #       if tweet_count > 2000:
+    #           break
+    #     words_from_tweets = []
+    #     forbidden = set(['@','#','&','…'])
+    #     for tweet in tweet_content:
+    #         word = []
+    #         for char in tweet:
+    #             if char == " ":
+    #                 if len(word):
+    #                     new_word = "".join(word)
+    #                     words_from_tweets.append(new_word)
+    #                     word = []
+    #             else:
+    #                 if char not in forbidden:
+    #                     word.append(char)
+    #                 else:
+    #                     word = []
+    #     new_document = {"handle":handle, "words": words_from_tweets}
+    #     collection.insert_one(new_document)
+    # if words_from_tweets:
+    #     quote = get_grammatical_quote_from_input_array(words_from_tweets)
+    # else:
+    #     quote = "out of service"
 
     return {"quote": quote}
 
