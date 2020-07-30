@@ -81,7 +81,7 @@ def test_DB():
     db = mongo.db
     collection = db.tweeters
     # print(db.name, collection.name)
-    # print(collection.count())
+    print(collection.count())
     # quote = str(collection.count())
     # quote = quotes_collection.find()[randrange(count)]["quote"]
 
