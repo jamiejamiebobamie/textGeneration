@@ -8,10 +8,10 @@ import urllib.parse
 #     MONGO_URL = "mongodb://localhost:27017/rest";
 app = Flask(__name__)
 # app.config['MONGO_URI'] = MONGO_URL
-MONGO_URI = str(os.environ.get('MONGO_URI2'))
+# MONGO_URI = str(os.environ.get('MONGO_URI2'))
 # MONGO_URI = None
-if not MONGO_URI:
-    MONGO_URI = "mongodb://localhost:27017/rest";
+# if not MONGO_URI:
+    # MONGO_URI = "mongodb://localhost:27017/rest";
 
 user = os.environ.get('HEROKU_USER')
 password = os.environ.get('HEROKU_PASSWORD')
@@ -76,7 +76,8 @@ def test_DB():
 
     db = mongo.db
     collection = db.tweeters
-    quote = str(collection.count())
+    print(collection.name)
+    # quote = str(collection.count())
     # quote = quotes_collection.find()[randrange(count)]["quote"]
 
     # handle = 'BarackObama'
