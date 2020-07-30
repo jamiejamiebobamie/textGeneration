@@ -7,7 +7,8 @@ from pymongo import MongoClient#, Connection
 #     MONGO_URL = "mongodb://localhost:27017/rest";
 app = Flask(__name__)
 # app.config['MONGO_URI'] = MONGO_URL
-MONGO_URI = os.environ.get('MONGO_URI')
+MONGO_URI = os.environ.get('MONGO_URL')
+# MONGO_URI = None
 if not MONGO_URI:
     MONGO_URI = "mongodb://localhost:27017/rest";
 mongo = MongoClient(MONGO_URI)
