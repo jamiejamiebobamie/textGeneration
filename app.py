@@ -1,18 +1,30 @@
 import os
 from flask import Flask, render_template, request
 import pymongo
-from pymongo import MongoClient#, Connection
+from pymongo import MongoClient
+import urllib.parse
 # MONGO_URL = os.environ.get('MONGO_URL')
 # if not MONGO_URL:
 #     MONGO_URL = "mongodb://localhost:27017/rest";
 app = Flask(__name__)
 # app.config['MONGO_URI'] = MONGO_URL
-MONGO_URI = os.environ.get('MONGO_URL')
+MONGO_URI = str(os.environ.get('MONGO_URI2'))
 # MONGO_URI = None
 if not MONGO_URI:
     MONGO_URI = "mongodb://localhost:27017/rest";
-mongo = MongoClient(MONGO_URI)
 
+user = os.environ.get('HEROKU_USER')
+password = os.environ.get('HEROKU_PASSWORD')
+user = urllib.parse.quote_plus(str(user))
+password = urllib.parse.quote_plus(str(password))
+host = os.environ.get('HEROKU_HOST')
+database = os.environ.get('HEROKU_DATABASE')
+host = urllib.parse.quote_plus(str(host))
+database = urllib.parse.quote_plus(str(database))
+
+mongo = MongoClient('mongodb://%s:%s@%s/%s?retryWrites=false' % (user, password, host, database))
+
+# mongo = MongoClient(MONGO_URI)
 
 # from urlparse import urlsplit
 # MONGO_URL = os.getenv('MONGODB_URI')
