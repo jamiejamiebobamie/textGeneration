@@ -369,12 +369,11 @@ def serve_quote_from_twitter():
                             word.append(char)
                         else:
                             word = []
-
-            new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
-            collection.find_one_and_delete( {"handle":handle} )
-            collection.insert_one(new_document)
-            print("updating DB")
-
+            if words_from_tweets:
+                new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
+                collection.find_one_and_delete( {"handle":handle} )
+                collection.insert_one(new_document)
+                print("updating DB")
     else:
         if len(handle)>1:
             if handle[0] == "@":
@@ -509,6 +508,17 @@ def serve_quote_from_file():
     # read_filepath = "./public/data/tokenized_Shakespeare.md"
     # quote = get_quote(read_filepath)
     return {"quote": quote}
+
+
+# get a random handle from the database.
+@app.route('/api/v1/rand-handle',methods=['GET'])
+@cross_origin()
+def get_handle_in_database():
+    db = mongo.db
+    collection = db.tweeters
+    _count = collection.count()
+    handle = collection.find()[randrange(_count)]["handle"]
+    return {"handle": handle}
 
 if __name__ == '__main__':
     port = os.getenv("PORT", 7000)
