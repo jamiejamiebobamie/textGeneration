@@ -76,7 +76,8 @@ def test_DB():
 
     db = mongo.db
     collection = db.tweeters
-    print(collection.name)
+    print(db.name, collection.name)
+    print(collection.count())
     # quote = str(collection.count())
     # quote = quotes_collection.find()[randrange(count)]["quote"]
 
@@ -136,7 +137,7 @@ def test_DB():
     # # new code using mongoengine python plugin
     # quote_document = quotes_collection.find()[randrange(count)]
     # quote = quote_document.quote
-    # quote = "out of service"
+    quote = "out of service"
 
     return render_template('index.html', title='Home',quote=quote)
 
