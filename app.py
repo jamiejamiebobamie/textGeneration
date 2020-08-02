@@ -68,10 +68,11 @@ def _main():
     # quotes_collection = db.quotes
     # count = quotes_collection.count()
     # quote = quotes_collection.find()[randrange(count)]["quote"]
-    quote = "hey jamie. i love you."
+    # quote = "hey jamie. i love you."
     # # new code using mongoengine python plugin
     # quote_document = quotes_collection.find()[randrange(count)]
     # quote = quote_document.quote
+    quote="hey"
 
     return render_template('index.html', title='Home',quote=quote)
 
