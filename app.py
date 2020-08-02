@@ -562,7 +562,7 @@ async def tweet():
     api = tweepy.API(auth)
     status += tweet + " @" + handle
     ok = await api.update_status(status)
-    return json.dumps({'success':ok==200}), ok, {'ContentType':'application/json'}
+    return {"status":str(ok)}
 
 if __name__ == '__main__':
     port = os.getenv("PORT", 7000)
