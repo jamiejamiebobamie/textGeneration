@@ -529,11 +529,22 @@ def get_handle_in_database():
 @app.route('/api/v1/tweet',methods=['POST'])
 @cross_origin()
 def tweet():
-    handle = request.get_json()["handle"]
-    tweet = request.get_json()["tweet"]
+    req = request.get_json()
+    print(req)
+
+    tweet = req["tweet"]
+    handle = req["handle"]
+
+    if len(handle)>1:
+        if handle[0] == "@":
+            handle = handle[1:]
+
+    print(tweet,handle)
+
     db = mongo.db
     collection = db.tweeters
     entry = collection.find_one({"handle":handle})
+    print(entry)
     # check to make sure that the content of the tweet recieved from the frontend
         # is valid, by checking the words of the tweet with the words in the database
         # for that user
