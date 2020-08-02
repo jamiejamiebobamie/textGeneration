@@ -531,8 +531,6 @@ def get_handle_in_database():
 def tweet():
     handle = request.get_json()["handle"]
     tweet = request.get_json()["tweet"]
-
-    print(data)
     db = mongo.db
     collection = db.tweeters
     entry = collection.find_one({"handle":handle})
