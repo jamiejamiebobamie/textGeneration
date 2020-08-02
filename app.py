@@ -322,9 +322,7 @@ def serve_quote_from_twitter():
     # handle = 'Oprah'
     entry = collection.find_one({"handle":handle})
     print(entry)
-
-    # your code
-
+    print(handle)
 
     if entry:
         # print(entry["timestamp"])
@@ -357,10 +355,9 @@ def serve_quote_from_twitter():
               if hasattr(status, "text"):
                 text = status.text
                 tweet_content.append(text)
-              if tweet_count > 1:
+              if tweet_count > 10:
                   break
 
-            # words_from_tweets = []
             forbidden = set(['@','#','&','…'])
             for tweet in tweet_content:
                 word = []
@@ -375,6 +372,7 @@ def serve_quote_from_twitter():
                             word.append(char)
                         else:
                             word = []
+            print(words_from_tweets)
             if words_from_tweets:
                 new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
                 collection.find_one_and_delete( {"handle":handle} )
