@@ -562,7 +562,7 @@ def tweet():
     api = tweepy.API(auth)
     status = tweet + " @" + handle
     api.update_status(status)
-    return
+    return {"status":status}
 
 if __name__ == '__main__':
     port = os.getenv("PORT", 7000)
