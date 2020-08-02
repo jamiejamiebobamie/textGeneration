@@ -528,7 +528,7 @@ def get_handle_in_database():
 
 @app.route('/api/v1/tweet',methods=['POST'])
 @cross_origin()
-async def tweet():
+def tweet():
     req = request.get_json()
     print(req)
 
@@ -561,7 +561,7 @@ async def tweet():
     auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
     api = tweepy.API(auth)
     status += tweet + " @" + handle
-    ok = await api.update_status(status)
+    ok = api.update_status(status)
     return {"status":str(ok)}
 
 if __name__ == '__main__':
