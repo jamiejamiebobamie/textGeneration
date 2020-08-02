@@ -227,7 +227,6 @@ def get_grammatical_quote_from_input(input):
                     next_word = pick_next_word(instances)
                 else:
                     next_word = pick_random_word(words)
-
                 my_quote.append(next_word)
             else:
                 my_quote = stop_after_punc(my_quote,70)
@@ -278,9 +277,9 @@ def get_grammatical_quote_from_input_array(array):
                     next_word = pick_next_word(instances)
                 else:
                     next_word = pick_random_word(words)
-
                 my_quote.append(next_word)
             else:
+                # my_quote = insert_periods(my_quote)
                 my_quote = stop_after_punc(my_quote,20)
                 my_quote = " ".join(my_quote)
                 return my_quote
@@ -313,6 +312,57 @@ def get_any_quote_from_input(input):
     else:
         my_quote = " ".join(my_quote)
         return my_quote
+
+def insert_periods(arr):
+    """
+        iterate through the input array of words
+        check to see if a word starts with an uppercase letter
+        check to see if that word is a common noun and not a pronoun by opening
+            the dictionary and checking to see if the word is in the dict
+        if it is a common noun, add a period before it.
+    """
+    return
+    for i in range(1,len(arr)):
+        if arr[i][0].isupper():
+            if binsearch_dictionary(arr[i]):
+                arr[i-1].append(".")
+
+def binsearch_dictionary(word_to_lookup,lower=None,upper=None):
+    """
+        perform a binary search on a locally-stored file
+            containing all of the words in the English language
+        return True or False if the word_to_lookup is in the file.
+    """
+    return
+    # if not lower:
+    #     word_to_lookup = word_to_lookup.lower()
+    #     # open local dict_word file
+    #         # turn the entire file into an array of words?
+    #     dictionary_words = []
+    #     lower = 0
+    #     upper = len(dictionary_words)-1
+    #     mid = (upper - lower)//2 + lower
+    #     char_index = 0
+    # while lower < upper:
+    #     # if there is a match, match until there isn't a match or return True
+    #     while dictionary_words[mid][char_index] == word_to_lookup[char_index]:
+    #         char_index+=1
+    #         if char_index > len(word_to_lookup):
+    #             return True
+    #     if char_index != 0:
+    #
+    #     # if there isn't a match, reset the char_index to look at the first letter of the word.
+    #     char_index = 0
+    #     # check to see if the first letter of the word_to_lookup is comes before the current word in the dictionary
+    #     if dictionary_words[mid][char_index] > word_to_lookup[char_index]:
+    #         pass
+    #     # check to see if the first letter of the word_to_lookup is comes after the current word in the dictionary
+    #     elif dictionary_words[mid][char_index] < word_to_lookup[char_index]:
+    #         pass
+    #     # ??? the first letter of the word matches but it's not the right word...
+    #     else:
+
+
 
 if __name__ == '__main__':
     _, read_filepath = sys.argv

@@ -88,7 +88,7 @@ def test_DB():
     # quote = str(collection.count())
     # quote = quotes_collection.find()[randrange(count)]["quote"]
 
-    handle = 'rihanna'
+    handle = 'Harry_Styles'
     # print(db.name, collection.name)
     # print(collection.count())
     # quote = str(collection.count())
@@ -114,7 +114,7 @@ def test_DB():
         elapsed_month_in_days = elapsed_months * 30
         elapsed_days += elapsed_year_in_days + elapsed_month_in_days
         # print(elapsed_days)
-        if elapsed_days < -1:
+        if elapsed_days < 30:
             words_from_tweets = entry["words"]
         else:
             if len(handle)>1:
@@ -137,6 +137,7 @@ def test_DB():
 
             # words_from_tweets = []
             forbidden = set(['@','#','&','…'])
+            punc = set([".","!","?"])
             for tweet in tweet_content:
                 word = []
                 for char in tweet:
@@ -150,6 +151,10 @@ def test_DB():
                             word.append(char)
                         else:
                             word = []
+                # check the last character of the last entry of words_from_tweets
+                    # if it is not punctuation, add a period.
+                # if words_from_tweets[-1][-1] not in punc:
+                #     words_from_tweets.append(".")
 
             new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
             collection.find_one_and_delete( {"handle":handle} )
@@ -519,6 +524,34 @@ def get_handle_in_database():
     _count = collection.count()
     handle = collection.find()[randrange(_count)]["handle"]
     return {"handle": handle}
+
+
+@app.route('/api/v1/tweet',methods=['POST'])
+@cross_origin()
+def tweet():
+    handle,tweet = request.get_json()
+    db = mongo.db
+    collection = db.tweeters
+    entry = collection.find_one({"handle":handle})
+    # check to make sure that the content of the tweet recieved from the frontend
+        # is valid, by checking the words of the tweet with the words in the database
+        # for that user
+    if entry:
+        unique_words_from_twitter_user = set(entry["words"])
+        words_of_tweet = tweet.split(" ")
+        for word in words_of_tweet:
+            if word not in unique_words_from_twitter_user:
+                return {"err":"Invalid tweet."}
+    else:
+        return {"err":"Invalid handle."}
+
+    auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
+    auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
+    api = tweepy.API(auth)
+    ok = api.update_status(tweet+" @"+handle)
+    print(ok)
+    return ok
+    # return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 if __name__ == '__main__':
     port = os.getenv("PORT", 7000)
