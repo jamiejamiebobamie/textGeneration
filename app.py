@@ -351,7 +351,7 @@ def serve_quote_from_twitter():
               if hasattr(status, "text"):
                 text = status.text
                 tweet_content.append(text)
-              if tweet_count > 10:
+              if tweet_count > 1000:
                   break
 
             forbidden = set(['@','#','&','…'])
@@ -386,7 +386,7 @@ def serve_quote_from_twitter():
           if hasattr(status, "text"):
             text = status.text
             tweet_content.append(text)
-          if tweet_count > 100:
+          if tweet_count > 1000:
               break
 
         # words_from_tweets = []
