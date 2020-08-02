@@ -529,7 +529,8 @@ def get_handle_in_database():
 @app.route('/api/v1/tweet',methods=['POST'])
 @cross_origin()
 def tweet():
-    handle,tweet = request.get_json()
+    data = request.get_json()
+    print(data)
     db = mongo.db
     collection = db.tweeters
     entry = collection.find_one({"handle":handle})
