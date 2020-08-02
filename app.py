@@ -340,10 +340,6 @@ def serve_quote_from_twitter():
         if elapsed_days < 30:
             words_from_tweets = entry["words"]
         else:
-            if len(handle)>1:
-                if handle[0] == "@":
-                    handle = handle[1:]
-
             auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
             auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
             api = tweepy.API(auth)
@@ -379,10 +375,6 @@ def serve_quote_from_twitter():
                 collection.insert_one(new_document)
                 print("updating DB")
     else:
-        if len(handle)>1:
-            if handle[0] == "@":
-                handle = handle[1:]
-
         auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
         auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
         api = tweepy.API(auth)
@@ -394,7 +386,7 @@ def serve_quote_from_twitter():
           if hasattr(status, "text"):
             text = status.text
             tweet_content.append(text)
-          if tweet_count > 2000:
+          if tweet_count > 100:
               break
 
         # words_from_tweets = []
@@ -412,7 +404,7 @@ def serve_quote_from_twitter():
                         word.append(char)
                     else:
                         word = []
-
+        print(words_from_tweets)
         new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
         collection.insert_one(new_document)
         print("inserting to DB")
