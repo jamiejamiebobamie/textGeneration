@@ -544,7 +544,7 @@ def tweet():
     db = mongo.db
     collection = db.tweeters
     entry = collection.find_one({"handle":handle})
-    print(entry)
+    print(entry.get("handle",False))
     # check to make sure that the content of the tweet recieved from the frontend
         # is valid, by checking the words of the tweet with the words in the database
         # for that user
