@@ -561,8 +561,8 @@ def tweet():
     auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
     api = tweepy.API(auth)
     status = tweet + " @" + handle
-    ok = api.update_status(status)
-    return {"HTTP_status":str(ok), "status":status}
+    api.update_status(status)
+    return
 
 if __name__ == '__main__':
     port = os.getenv("PORT", 7000)
