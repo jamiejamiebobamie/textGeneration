@@ -3,50 +3,15 @@ from flask import Flask, render_template, request
 import pymongo
 from pymongo import MongoClient
 import urllib.parse
-# import time
 from datetime import datetime
 
-# MONGO_URL = os.environ.get('MONGO_URL')
-# if not MONGO_URL:
-#     MONGO_URL = "mongodb://localhost:27017/rest";
 app = Flask(__name__)
-# app.config['MONGO_URI'] = MONGO_URL
-# MONGO_URI = str(os.environ.get('MONGO_URI2'))
-# MONGO_URI = None
-# if not MONGO_URI:
-    # MONGO_URI = "mongodb://localhost:27017/rest";
-#
-# user = os.environ.get('HEROKU_USER')
-# password = os.environ.get('HEROKU_PASSWORD')
-# user = urllib.parse.quote_plus(str(user))
-# password = urllib.parse.quote_plus(str(password))
-# host = os.environ.get('HEROKU_HOST')
-# database = os.environ.get('HEROKU_DATABASE')
-# host = urllib.parse.quote_plus(str(host))
-# database = urllib.parse.quote_plus(str(database))
 
 MONGO_URI = str(os.environ.get('MONGO_URI'))
 mongo = MongoClient(MONGO_URI)
 
-
-# mongo = MongoClient('mongodb://%s:%s@%s/%s?retryWrites=false' % (user, password, host, database))
-
-# mongo = MongoClient(MONGO_URI)
-
-# from urlparse import urlsplit
-# MONGO_URL = os.getenv('MONGODB_URI')
-# parsed = urlsplit(url)
-# db_name = parsed.path[1:]
-# app.config['MONGO_URI'] = MONGO_URL
-# import pymongo
-# # from pymongo import pymongo, MongoClient#, Connection
-# # client = pymongo.MongoClient(os.getenv(“MONGODB_URI”, “mongodb://127.0.0.1:27017/database”))
-# # client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
-# client = pymongo.MongoClient(os.getenv("MONGO_URL", "mongodb://127.0.0.1:27017/database"))
-
 from random import randrange
 from src.web_functions import get_quote, pick_random_from_array, get_grammatical_quote_from_input, get_any_quote_from_input, get_grammatical_quote_from_input_array
-from src.Quote_document import Quote
 
 from flask_cors import CORS, cross_origin
 # public API, allow all requests *
@@ -64,16 +29,7 @@ import tweepy
 # pull quote from db.
 @app.route('/')
 def _main():
-    # db = client.database
-    # quotes_collection = db.quotes
-    # count = quotes_collection.count()
-    # quote = quotes_collection.find()[randrange(count)]["quote"]
-    # quote = "hey jamie. i love you."
-    # # new code using mongoengine python plugin
-    # quote_document = quotes_collection.find()[randrange(count)]
-    # quote = quote_document.quote
     quote="hey"
-
     return render_template('index.html', title='Home',quote=quote)
 
 
@@ -84,209 +40,47 @@ def test_DB():
 
     db = mongo.db
     collection = db.tweeters
-    # print(db.name, collection.name)
-    # print(collection.count())
-    # quote = str(collection.count())
-    # quote = quotes_collection.find()[randrange(count)]["quote"]
 
-    handle = 'Harry_Styles'
-    # print(db.name, collection.name)
-    # print(collection.count())
-    # quote = str(collection.count())
-    # quote = quotes_collection.find()[randrange(count)]["quote"]
+    return render_template('index.html', title='Home')
 
-    # handle = 'Oprah'
-    entry = collection.find_one({"handle":handle})
-    # print(entry)
-
-    # your code
-
-
-    if entry:
-        # print(entry["timestamp"])
-        entry_year, entry_month, entry_day = entry["timestamp"].split(" ")[0].split("-")[:3]
-        # print(entry_year, entry_month, entry_day)
-        today_year, today_month, today_day = str(datetime.now()).split(" ")[0].split("-")[:3]
-        # print(today_year, today_month, today_day)
-        elapsed_years = int(today_year) - int(entry_year)
-        elapsed_months = int(today_month) - int(entry_month)
-        elapsed_days = int(today_day) - int(entry_day)
-        elapsed_year_in_days = elapsed_years * 30 * 12
-        elapsed_month_in_days = elapsed_months * 30
-        elapsed_days += elapsed_year_in_days + elapsed_month_in_days
-        # print(elapsed_days)
-        if elapsed_days < 30:
-            words_from_tweets = entry["words"]
-        else:
-            if len(handle)>1:
-                if handle[0] == "@":
-                    handle = handle[1:]
-
-            auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
-            auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
-            api = tweepy.API(auth)
-            tweet_content = []
-
-            tweet_count = 0
-            for status in Cursor(api.user_timeline, id=handle).items():
-              tweet_count += 1
-              if hasattr(status, "text"):
-                text = status.text
-                tweet_content.append(text)
-              if tweet_count > 2000:
-                  break
-
-            # words_from_tweets = []
-            forbidden = set(['@','#','&','…'])
-            punc = set([".","!","?"])
-            for tweet in tweet_content:
-                word = []
-                for char in tweet:
-                    if char == " ":
-                        if len(word):
-                            new_word = "".join(word)
-                            words_from_tweets.append(new_word)
-                            word = []
-                    else:
-                        if char not in forbidden:
-                            word.append(char)
-                        else:
-                            word = []
-                # check the last character of the last entry of words_from_tweets
-                    # if it is not punctuation, add a period.
-                # if words_from_tweets[-1][-1] not in punc:
-                #     words_from_tweets.append(".")
-
-            new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
-            collection.find_one_and_delete( {"handle":handle} )
-            collection.insert_one(new_document)
-            print("updating DB")
-
-    else:
-        if len(handle)>1:
-            if handle[0] == "@":
-                handle = handle[1:]
-
-        auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
-        auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
-        api = tweepy.API(auth)
-        tweet_content = []
-
-        tweet_count = 0
-        for status in Cursor(api.user_timeline, id=handle).items():
-          tweet_count += 1
-          if hasattr(status, "text"):
-            text = status.text
-            tweet_content.append(text)
-          if tweet_count > 2000:
-              break
-
-        # words_from_tweets = []
-        forbidden = set(['@','#','&','…'])
-        for tweet in tweet_content:
-            word = []
-            for char in tweet:
-                if char == " ":
-                    if len(word):
-                        new_word = "".join(word)
-                        words_from_tweets.append(new_word)
-                        word = []
-                else:
-                    if char not in forbidden:
-                        word.append(char)
-                    else:
-                        word = []
-
-        new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
-        collection.insert_one(new_document)
-        print("inserting to DB")
-
-    if words_from_tweets:
-        quote = get_grammatical_quote_from_input_array(words_from_tweets)
-    else:
-        quote = "out of service"
-    #
-    #
-    # db = mongo.db
-    # collection = db.tweeters
-    # entry = collection.find_one({"handle":handle})
-    # if entry:
-    #     words_from_tweets = entry["words"]
-    # else:
-    #     auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
-    #     auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
-    #     api = tweepy.API(auth)
-    #     tweet_content = []
-    #     tweet_count = 0
-    #     for status in Cursor(api.user_timeline, id=handle).items():
-    #       tweet_count += 1
-    #       if hasattr(status, "text"):
-    #         text = status.text
-    #         tweet_content.append(text)
-    #       if tweet_count > 2000:
-    #           break
-    #     words_from_tweets = []
-    #     forbidden = set(['@','#','&','…'])
-    #     for tweet in tweet_content:
-    #         word = []
-    #         for char in tweet:
-    #             if char == " ":
-    #                 if len(word):
-    #                     new_word = "".join(word)
-    #                     words_from_tweets.append(new_word)
-    #                     word = []
-    #             else:
-    #                 if char not in forbidden:
-    #                     word.append(char)
-    #                 else:
-    #                     word = []
-    #     new_document = {"handle":handle, "words": words_from_tweets}
-    #     collection.insert_one(new_document)
-    # if words_from_tweets:
-    #     quote = get_grammatical_quote_from_input_array(words_from_tweets)
-    # else:
-    #     quote = "out of service"
-    # quote = "out of service"
-
-
-    return render_template('index.html', title='Home',quote=quote)
-
-# add quote to db.
-@app.route('/generate')
+# generate shakespeare quote and add it to the db.
+@app.route('/generate-shakespeare')
 def generate():
+    db = mongo.db
+    pregenerated_quotes = db.pregeneratedShakespeare
+
     read_filepath = "./public/data/tokenized_Shakespeare.md"
     quote = get_quote(read_filepath)
     new_quote_document = {"quote":quote}
 
-    # new code using mongoengine python plugin
+    pregenerated_quotes.insert_one(new_quote_document)
 
-    # new_quote_document = Quote()
-    # new_quote_document.quote = quote
-    # db = client.database
-    # quotes_collection = db.quotes
-    # quotes_collection.insert_one(new_quote_document)
     return render_template('index.html', title='Home',quote=quote)
 
-# pull quote from file.
-@app.route('/pregenerated')
+# read the pregenerated shakespeare quotes and add them to the db.
+@app.route('/pregenerated-shakespeare')
 def pregenerated():
+    db = mongo.db
+    collection = db.pregeneratedShakespeare
+
     file = 'src/quotes_tokenized_Shakespeare.md'
-    quotes = []
+    quote_documents = []
     with open(file, "r") as pregenerated_quotes:
-        for line in pregenerated_quotes:
-            quotes.append(line)
-    quote = pick_random_from_array(quotes)
-    return render_template('index.html', title='Home',quote=quote)
+        for quote in pregenerated_quotes:
+            new_quote_document = {"quote":quote}
+            quote_documents.append(new_quote_document)
+        collection.insert_many(quote_documents)
+    return {"quotes":quote_documents}
 
 # pull quote from db and return as JSON.
 @app.route('/api/v1/quote',methods=['GET'])
 @cross_origin()
 def serve_quote():
     db = client.database
-    quotes_collection = db.quotes
+    quotes_collection = db.pregenerated_quotes
     count = quotes_collection.count()
     quote = quotes_collection.find()[randrange(count)]
-    return {"quote": quote["quote"]}
+    return quote
 
 # create quote from request.body and return as JSON.
 @app.route('/api/v1/quote-from-input',methods=['POST'])
