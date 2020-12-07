@@ -35,41 +35,6 @@ def _main():
     quote="hey"
     return render_template('index.html', title='Home',quote=quote)
 
-# read the pregenerated shakespeare quotes and add them to the db.
-@app.route('/upload-pregenerated-quotes-to-db')
-def pregenerated():
-    # is_logged_in = request.cookies.get('loggedin?')
-    # if is_logged_in == str(os.environ.get('is_logged_in')):
-    db = mongo.db
-    pregeneratedShakespeare = db.pregeneratedShakespeare
-    file = 'src/quotes_from_data.md'
-    quote_documents = []
-
-    bulk = pregeneratedShakespeare.initialize_unordered_bulk_op()
-
-    with open(file, "r") as pregenerated_quotes:
-        for i, line in enumerate(pregenerated_quotes):
-            if i % 2:
-                quote = line
-                bulk.insert({"quote":quote,"author":author})
-            else:
-                author = line
-            # quote_documents.append(new_quote_document)
-        # print(len(quote_documents))
-
-    try:
-        bulk.execute()
-    except BulkWriteError as bwe:
-        print(bwe.details)
-        #you can also take this component and do more analysis
-        #werrors = bwe.details['writeErrors']
-        raise
-
-    return {}
-    #     return render_template('index.html', quote=quote_documents)
-    # else:
-    #     return render_template('login.html')
-
 # generate shakespeare quote and add it to the db.
 # takes a very long time...
 @app.route('/generate-shakespeare')
@@ -239,39 +204,6 @@ def serve_quote_from_url():
         quote = ""
     return {"quote": quote}
 
-# create quote from tweets associated a twitter handle and return as JSON.
-@app.route('/api/v1/quote-from-author/<author_Lname>',methods=['GET'])
-@cross_origin()
-def serve_quote_from_file(author_Lname):
-    if author_Lname == "Shakespeare":
-        # Shakespeare is too big of a file to generate quickly
-        # so pull cached Shakespeare quotes from db
-        db = mongo.db
-        collection = db.pregeneratedShakespeare
-        _count = collection.count()
-        quote = collection.find()[randrange(_count)]["quote"]
-    else:
-        # if not shakespeare generate a new quote
-        authors = set()
-        files = {}
-        # append filenames in data folder to a set
-        for md in glob.glob("./public/data/*.md"):
-            filename_parts = md.split("_")
-            # print(filename_parts)
-            author = filename_parts[1].split(".")[0]
-            authors.add(author)
-            files[author] = md
-
-        quote = None
-
-        # see if author_Lname is in the set
-        if author_Lname in authors:
-            quote = get_quote(files[author_Lname])
-
-    # return quote and authorname as JSON
-    return {"quote": quote,"author":author_Lname}
-
-
 # get a random handle from the database.
 @app.route('/api/v1/rand-handle',methods=['GET'])
 @cross_origin()
@@ -317,6 +249,7 @@ def tweet():
     auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
     api = tweepy.API(auth)
     status = tweet + " @" + handle
+    # this doesn't seem to work all of the time...
     api.update_status(status)
     return {"status":status}
 
