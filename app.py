@@ -10,6 +10,8 @@ app = Flask(__name__)
 MONGO_URI = str(os.environ.get('MONGO_URI'))
 mongo = MongoClient(MONGO_URI)
 
+from pymongo.errors import BulkWriteError
+
 from random import randrange
 from src.web_functions import get_quote, pick_random_from_array, get_grammatical_quote_from_input, get_any_quote_from_input, get_grammatical_quote_from_input_array
 
@@ -34,50 +36,37 @@ def _main():
     return render_template('index.html', title='Home',quote=quote)
 
 # read the pregenerated shakespeare quotes and add them to the db.
-@app.route('/pregenerated-shakespeare')
+@app.route('/upload-pregenerated-quotes-to-db')
 def pregenerated():
     # is_logged_in = request.cookies.get('loggedin?')
     # if is_logged_in == str(os.environ.get('is_logged_in')):
     db = mongo.db
-    collection = db.pregeneratedShakespeare
-    file = 'src/quotes_tokenized_Shakespeare.md'
+    pregeneratedShakespeare = db.pregeneratedShakespeare
+    file = 'src/quotes_from_data.md'
     quote_documents = []
+
+    bulk = pregeneratedShakespeare.initialize_unordered_bulk_op()
+
     with open(file, "r") as pregenerated_quotes:
-        for quote in pregenerated_quotes:
-            new_quote_document = {"quote":quote}
-            quote_documents.append(new_quote_document)
-        collection.insert_many(quote_documents)
+        for i, line in enumerate(pregenerated_quotes):
+            if i % 2:
+                quote = line
+                bulk.insert({"quote":quote,"author":author})
+            else:
+                author = line
+            # quote_documents.append(new_quote_document)
+        # print(len(quote_documents))
+
+    try:
+        bulk.execute()
+    except BulkWriteError as bwe:
+        print(bwe.details)
+        #you can also take this component and do more analysis
+        #werrors = bwe.details['writeErrors']
+        raise
+
     return {}
     #     return render_template('index.html', quote=quote_documents)
-    # else:
-    #     return render_template('login.html')
-
-
-
-
-# generate shakespeare quote and add it to the db.
-# takes a very long time...
-@app.route('/add-shakespeare')
-def add_author():
-    # is_logged_in = request.cookies.get('loggedin?')
-    # if is_logged_in == str(os.environ.get('is_logged_in')):
-    db = mongo.db
-    pregenerated_quotes = db.pregeneratedShakespeare
-
-    # read_filepath = "./public/data/tokenized_Shakespeare.md"
-    # quote = get_quote(read_filepath)
-    # new_quote_document = {"quote":quote}
-    #
-    # pregenerated_quotes.insert_one(new_quote_document)
-
-
-    # for updating all current shakespeare quotes with an author field:
-    # db = mongo.db
-    # collection = db.pregeneratedShakespeare
-    success = pregenerated_quotes.update_many( {}, {  "$set": { "author": "Shakespeare"}  }).acknowledged
-
-    return success
-    # return render_template('index.html', quote=quote)
     # else:
     #     return render_template('login.html')
 
@@ -104,11 +93,14 @@ def generate():
 @app.route('/api/v1/quote',methods=['GET'])
 @cross_origin()
 def serve_quote():
-    db = client.database
-    quotes_collection = db.pregenerated_quotes
-    count = quotes_collection.count()
-    quote = quotes_collection.find()[randrange(count)]
-    return quote
+    db = mongo.db
+    pregenerated_quotes = db.pregeneratedShakespeare
+    count = pregenerated_quotes.count()
+    document = pregenerated_quotes.find()[randrange(count)]
+
+    entry = {"quote":document["quote"],"author":document["author"]}
+
+    return entry
 
 # create quote from request.body and return as JSON.
 @app.route('/api/v1/quote-from-input',methods=['POST'])
