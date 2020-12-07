@@ -25,6 +25,7 @@ from dotenv import load_dotenv
 from tweepy import Cursor
 import tweepy
 
+import glob
 
 # pull quote from db.
 @app.route('/')
@@ -32,37 +33,13 @@ def _main():
     quote="hey"
     return render_template('index.html', title='Home',quote=quote)
 
-
-# pull quote from db.
-@app.route('/testDB')
-def test_DB():
-    words_from_tweets = []
-
-    db = mongo.db
-    collection = db.tweeters
-
-    return render_template('index.html', title='Home')
-
-# generate shakespeare quote and add it to the db.
-@app.route('/generate-shakespeare')
-def generate():
-    db = mongo.db
-    pregenerated_quotes = db.pregeneratedShakespeare
-
-    read_filepath = "./public/data/tokenized_Shakespeare.md"
-    quote = get_quote(read_filepath)
-    new_quote_document = {"quote":quote}
-
-    pregenerated_quotes.insert_one(new_quote_document)
-
-    return render_template('index.html', title='Home',quote=quote)
-
 # read the pregenerated shakespeare quotes and add them to the db.
 @app.route('/pregenerated-shakespeare')
 def pregenerated():
+    # is_logged_in = request.cookies.get('loggedin?')
+    # if is_logged_in == str(os.environ.get('is_logged_in')):
     db = mongo.db
     collection = db.pregeneratedShakespeare
-
     file = 'src/quotes_tokenized_Shakespeare.md'
     quote_documents = []
     with open(file, "r") as pregenerated_quotes:
@@ -70,7 +47,58 @@ def pregenerated():
             new_quote_document = {"quote":quote}
             quote_documents.append(new_quote_document)
         collection.insert_many(quote_documents)
-    return {"quotes":quote_documents}
+    return {}
+    #     return render_template('index.html', quote=quote_documents)
+    # else:
+    #     return render_template('login.html')
+
+
+
+
+# generate shakespeare quote and add it to the db.
+# takes a very long time...
+@app.route('/add-shakespeare')
+def add_author():
+    # is_logged_in = request.cookies.get('loggedin?')
+    # if is_logged_in == str(os.environ.get('is_logged_in')):
+    db = mongo.db
+    pregenerated_quotes = db.pregeneratedShakespeare
+
+    # read_filepath = "./public/data/tokenized_Shakespeare.md"
+    # quote = get_quote(read_filepath)
+    # new_quote_document = {"quote":quote}
+    #
+    # pregenerated_quotes.insert_one(new_quote_document)
+
+
+    # for updating all current shakespeare quotes with an author field:
+    # db = mongo.db
+    # collection = db.pregeneratedShakespeare
+    success = pregenerated_quotes.update_many( {}, {  "$set": { "author": "Shakespeare"}  }).acknowledged
+
+    return success
+    # return render_template('index.html', quote=quote)
+    # else:
+    #     return render_template('login.html')
+
+# generate shakespeare quote and add it to the db.
+# takes a very long time...
+@app.route('/generate-shakespeare')
+def generate():
+    is_logged_in = request.cookies.get('loggedin?')
+    if is_logged_in == str(os.environ.get('is_logged_in')):
+        db = mongo.db
+        pregenerated_quotes = db.pregeneratedShakespeare
+
+        read_filepath = "./public/data/tokenized_Shakespeare.md"
+        quote = get_quote(read_filepath)
+        new_quote_document = {"quote":quote}
+
+        pregenerated_quotes.insert_one(new_quote_document)
+
+        return render_template('index.html', quote=quote)
+    else:
+        return render_template('login.html')
 
 # pull quote from db and return as JSON.
 @app.route('/api/v1/quote',methods=['GET'])
@@ -103,34 +131,19 @@ def serve_quote_from_twitter():
     if len(handle)>1:
         if handle[0] == "@":
             handle = handle[1:]
-
     words_from_tweets = []
-
     db = mongo.db
     collection = db.tweeters
-    # print(db.name, collection.name)
-    # print(collection.count())
-    # quote = str(collection.count())
-    # quote = quotes_collection.find()[randrange(count)]["quote"]
-
-    # handle = 'Oprah'
     entry = collection.find_one({"handle":handle})
-    print(entry)
-    print(handle)
-
     if entry:
-        # print(entry["timestamp"])
         entry_year, entry_month, entry_day = entry["timestamp"].split(" ")[0].split("-")[:3]
-        # print(entry_year, entry_month, entry_day)
         today_year, today_month, today_day = str(datetime.now()).split(" ")[0].split("-")[:3]
-        # print(today_year, today_month, today_day)
         elapsed_years = int(today_year) - int(entry_year)
         elapsed_months = int(today_month) - int(entry_month)
         elapsed_days = int(today_day) - int(entry_day)
         elapsed_year_in_days = elapsed_years * 30 * 12
         elapsed_month_in_days = elapsed_months * 30
         elapsed_days += elapsed_year_in_days + elapsed_month_in_days
-        # print(elapsed_days)
         if elapsed_days < 30:
             words_from_tweets = entry["words"]
         else:
@@ -147,7 +160,6 @@ def serve_quote_from_twitter():
                 tweet_content.append(text)
               if tweet_count > 1000:
                   break
-
             forbidden = set(['@','#','&','…'])
             for tweet in tweet_content:
                 word = []
@@ -182,8 +194,6 @@ def serve_quote_from_twitter():
             tweet_content.append(text)
           if tweet_count > 1000:
               break
-
-        # words_from_tweets = []
         forbidden = set(['@','#','&','…'])
         for tweet in tweet_content:
             word = []
@@ -198,57 +208,12 @@ def serve_quote_from_twitter():
                         word.append(char)
                     else:
                         word = []
-        print(words_from_tweets)
         new_document = {"handle":handle, "words": words_from_tweets, "timestamp": str(datetime.now())}
         collection.insert_one(new_document)
-        print("inserting to DB")
-
     if words_from_tweets:
         quote = get_grammatical_quote_from_input_array(words_from_tweets)
     else:
         quote = "out of service"
-    #
-    #
-    # db = mongo.db
-    # collection = db.tweeters
-    # entry = collection.find_one({"handle":handle})
-    # if entry:
-    #     words_from_tweets = entry["words"]
-    # else:
-    #     auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
-    #     auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
-    #     api = tweepy.API(auth)
-    #     tweet_content = []
-    #     tweet_count = 0
-    #     for status in Cursor(api.user_timeline, id=handle).items():
-    #       tweet_count += 1
-    #       if hasattr(status, "text"):
-    #         text = status.text
-    #         tweet_content.append(text)
-    #       if tweet_count > 2000:
-    #           break
-    #     words_from_tweets = []
-    #     forbidden = set(['@','#','&','…'])
-    #     for tweet in tweet_content:
-    #         word = []
-    #         for char in tweet:
-    #             if char == " ":
-    #                 if len(word):
-    #                     new_word = "".join(word)
-    #                     words_from_tweets.append(new_word)
-    #                     word = []
-    #             else:
-    #                 if char not in forbidden:
-    #                     word.append(char)
-    #                 else:
-    #                     word = []
-    #     new_document = {"handle":handle, "words": words_from_tweets}
-    #     collection.insert_one(new_document)
-    # if words_from_tweets:
-    #     quote = get_grammatical_quote_from_input_array(words_from_tweets)
-    # else:
-    #     quote = "out of service"
-
     return {"quote": quote}
 
 # create quote from url content and return as JSON.
@@ -283,21 +248,36 @@ def serve_quote_from_url():
     return {"quote": quote}
 
 # create quote from tweets associated a twitter handle and return as JSON.
-@app.route('/api/v1/quote-from-author',methods=['POST'])
+@app.route('/api/v1/quote-from-author/<author_Lname>',methods=['GET'])
 @cross_origin()
-def serve_quote_from_file():
-    authorName = request.get_json()
+def serve_quote_from_file(author_Lname):
+    if author_Lname == "Shakespeare":
+        # Shakespeare is too big of a file to generate quickly
+        # so pull cached Shakespeare quotes from db
+        db = mongo.db
+        collection = db.pregeneratedShakespeare
+        _count = collection.count()
+        quote = collection.find()[randrange(_count)]["quote"]
+    else:
+        # if not shakespeare generate a new quote
+        authors = set()
+        files = {}
+        # append filenames in data folder to a set
+        for md in glob.glob("./public/data/*.md"):
+            filename_parts = md.split("_")
+            # print(filename_parts)
+            author = filename_parts[1].split(".")[0]
+            authors.add(author)
+            files[author] = md
 
-    file = 'src/quotes_tokenized_Shakespeare.md'
-    quotes = []
-    with open(file, "r") as pregenerated_quotes:
-        for line in pregenerated_quotes:
-            quotes.append(line)
-    quote = pick_random_from_array(quotes)
-    # grimm rowling and shakespeare
-    # read_filepath = "./public/data/tokenized_Shakespeare.md"
-    # quote = get_quote(read_filepath)
-    return {"quote": quote}
+        quote = None
+
+        # see if author_Lname is in the set
+        if author_Lname in authors:
+            quote = get_quote(files[author_Lname])
+
+    # return quote and authorname as JSON
+    return {"quote": quote,"author":author_Lname}
 
 
 # get a random handle from the database.
@@ -309,7 +289,6 @@ def get_handle_in_database():
     _count = collection.count()
     handle = collection.find()[randrange(_count)]["handle"]
     return {"handle": handle}
-
 
 @app.route('/api/v1/tweet',methods=['POST'])
 @cross_origin()

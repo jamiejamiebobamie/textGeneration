@@ -69,8 +69,8 @@ def write_tokenized_file(read_filepath):
 
     filepath = read_filepath.split("/")
     write_filename = filepath[-1]
-    relative_path = "/".join(filepath[:-1])
-    write_filepath = "./"+relative_path+write_filename
+    relative_path = "/".join(filepath[:-2])
+    write_filepath = "./" + relative_path + '/' + "tokenized_" + write_filename
     with open(write_filepath, "w") as new_file:
         for token in tokenized_words_array:
             new_file.write(token + " ")
