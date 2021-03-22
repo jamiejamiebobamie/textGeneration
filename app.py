@@ -256,8 +256,7 @@ def tweet():
 @app.route('/api/v1/dead-tweet',methods=['POST'])
 @cross_origin()
 def dead_tweet():
-    req = request.get_json()
-    print(req)
+    req = request.get_json(force=True)
 
     status = req["status"]
 
@@ -277,8 +276,8 @@ def dead_tweet():
     # else:
     #     return {"err":"Invalid handle."}
 
-    auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
-    auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
+    auth = tweepy.OAuthHandler(os.environ.get("consumer_key"), os.environ.get("consumer_secret"))
+    auth.set_access_token(os.environ.get("access_token_key"), os.environ.get("access_token_secret"))
     api = tweepy.API(auth)
 
     api.update_status(status)
