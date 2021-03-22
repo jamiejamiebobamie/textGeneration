@@ -255,7 +255,7 @@ def tweet():
 
 @app.route('/api/v1/dead-tweet',methods=['POST'])
 @cross_origin()
-def tweet():
+def dead_tweet():
     req = request.get_json()
     print(req)
 
