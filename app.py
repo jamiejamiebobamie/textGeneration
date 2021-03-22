@@ -253,6 +253,37 @@ def tweet():
     api.update_status(status)
     return {"status":status}
 
+@app.route('/api/v1/dead-tweet',methods=['POST'])
+@cross_origin()
+def tweet():
+    req = request.get_json()
+    print(req)
+
+    status = req["status"]
+
+    # db = mongo.db
+    # collection = db.tweeters
+    # entry = collection.find_one({"handle":handle})
+    # print(entry.get("handle",False))
+    # # check to make sure that the content of the tweet recieved from the frontend
+    #     # is valid, by checking the words of the tweet with the words in the database
+    #     # for that user
+    # if entry:
+    #     unique_words_from_twitter_user = set(entry["words"])
+    #     words_of_tweet = tweet.split(" ")
+    #     for word in words_of_tweet:
+    #         if word not in unique_words_from_twitter_user:
+    #             return {"err":"Invalid tweet."}
+    # else:
+    #     return {"err":"Invalid handle."}
+
+    auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
+    auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
+    api = tweepy.API(auth)
+    
+    api.update_status(status)
+    return {"status":status}
+
 if __name__ == '__main__':
     port = os.getenv("PORT", 7000)
     app.run(host = '0.0.0.0', port = int(port), debug=True)
