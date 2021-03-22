@@ -17,7 +17,7 @@ from src.web_functions import get_quote, pick_random_from_array, get_grammatical
 
 from flask_cors import CORS, cross_origin
 # public API, allow all requests *
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={"/api/*": {"origins": "*"}})
 
 from bs4 import BeautifulSoup
 import requests
@@ -280,7 +280,7 @@ def tweet():
     auth = tweepy.OAuthHandler(os.environ.get("TWITTER_API_KEY"), os.environ.get("TWITTER_API_SECRET"))
     auth.set_access_token(os.environ.get("TWITTER_ACCESS_TOKEN_KEY"), os.environ.get("TWITTER_ACCESS_TOKEN_SECRET"))
     api = tweepy.API(auth)
-    
+
     api.update_status(status)
     return {"status":status}
 
