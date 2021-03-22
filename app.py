@@ -17,7 +17,7 @@ from src.web_functions import get_quote, pick_random_from_array, get_grammatical
 
 from flask_cors import CORS, cross_origin
 # public API, allow all requests *
-cors = CORS(app, resources={"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 from bs4 import BeautifulSoup
 import requests
