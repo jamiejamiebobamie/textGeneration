@@ -260,6 +260,10 @@ def dead_tweet():
 
     status = req["status"]
 
+    if len(status)>200:
+        return {"status":"Status is too long."}
+
+
     # db = mongo.db
     # collection = db.tweeters
     # entry = collection.find_one({"handle":handle})
